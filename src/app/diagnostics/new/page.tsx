@@ -1,79 +1,86 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
-  Truck, 
-  AlertCircle, 
-  Mic, 
-  Camera, 
   ArrowRight, 
   ArrowLeft, 
   CheckCircle2, 
   Sparkles,
-  ShieldAlert,
-  Loader2
+  Loader2,
+  Mic,
+  Camera,
+  AlertCircle
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { useTorqStore } from "@/lib/store";
+import { fetchTrucks, startDiagnosis, type TruckBrief } from "@/lib/api";
 
 export default function NewDiagnosisPage() {
   const router = useRouter();
-  const { createNewSession, activeSession } = useTorqStore();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-
-  // Form State
-  const [truckModel, setTruckModel] = useState("Kenworth T680 Next Gen");
-  const [engine, setEngine] = useState("PACCAR MX-13 455 HP");
-  const [year, setYear] = useState("2023");
-  const [mileage, setMileage] = useState("142300");
-  const [vin, setVin] = useState("1NKDX4EX7PR981240");
-
-  const [symptom, setSymptom] = useState("Engine loses power under load and hesitates during acceleration above 1,400 RPM.");
+  const [trucks, setTrucks] = useState<TruckBrief[]>([]);
+  const [loadingTrucks, setLoadingTrucks] = useState(true);
+  const [selectedTruckId, setSelectedTruckId] = useState("");
+  const [symptom, setSymptom] = useState("");
+  const [spn, setSpn] = useState("100");
+  const [fmi, setFmi] = useState("4");
   const [voiceRecording, setVoiceRecording] = useState(false);
-
-  const [dtcType, setDtcType] = useState<"SPN" | "FMI" | "P-Code">("SPN");
-  const [spn, setSpn] = useState("94");
-  const [fmi, setFmi] = useState("1");
   const [isScanningOCR, setIsScanningOCR] = useState(false);
-
-  // Loading Sequence State for Step 4
+  const [dtcType, setDtcType] = useState<"SPN" | "P-Code">("SPN");
   const [analyzingStage, setAnalyzingStage] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const stages = [
     "Reading symptom description & telemetry context...",
-    "Retrieving PACCAR MX-13 DTC Knowledge Base...",
-    "Comparing candidate causes against 1,450 fleet cases...",
-    "Selecting evidence-backed Next-Best-Test...",
-    "Verifying pressure limits via TORQ-LOCK...",
+    "Querying DTC knowledge base via RAG...",
+    "Running Bayesian candidate scoring...",
+    "Selecting Next-Best-Test via information gain...",
+    "Verifying specs via TORQ-LOCK...",
   ];
 
-  const handleStartAnalysis = () => {
+  useEffect(() => {
+    fetchTrucks()
+      .then((data) => {
+        setTrucks(data);
+        if (data.length > 0) setSelectedTruckId(data[0].id);
+      })
+      .catch(() => setError("Could not load trucks from backend"))
+      .finally(() => setLoadingTrucks(false));
+  }, []);
+
+  const handleStartAnalysis = async () => {
+    setError(null);
+    if (!selectedTruckId || !symptom.trim()) {
+      setError("Please select a truck and describe the symptom.");
+      return;
+    }
+
     setStep(4);
-    let currentStage = 0;
+    // Animate stages while API call runs
+    let stage = 0;
     const interval = setInterval(() => {
-      currentStage++;
-      if (currentStage < stages.length) {
-        setAnalyzingStage(currentStage);
-      } else {
-        clearInterval(interval);
-        // Commit new session
-        createNewSession({
-          truckModel,
-          engine,
-          mileage: parseInt(mileage) || 140000,
-          vin,
-          symptomText: symptom,
-          dtc: `SPN ${spn} / FMI ${fmi}`,
-          spn: parseInt(spn) || 94,
-          fmi: parseInt(fmi) || 1,
-        });
-        setTimeout(() => {
-          router.push(`/diagnostics/${activeSession.id}`);
-        }, 600);
-      }
-    }, 700);
+      stage++;
+      if (stage < stages.length) setAnalyzingStage(stage);
+    }, 600);
+
+    try {
+      const dtcCode = `SPN-${spn}-FMI-${fmi}`;
+      const result = await startDiagnosis({
+        truck_id: selectedTruckId,
+        symptom_text: symptom,
+        dtc_codes: [dtcCode],
+      });
+      clearInterval(interval);
+      setAnalyzingStage(stages.length);
+      setTimeout(() => {
+        router.push(`/diagnostics/${result.session_id}`);
+      }, 500);
+    } catch (err) {
+      clearInterval(interval);
+      setError(err instanceof Error ? err.message : "Diagnosis failed");
+      setStep(3);
+    }
   };
 
   return (
@@ -140,92 +147,54 @@ export default function NewDiagnosisPage() {
                 Vehicle Identification
               </h2>
               <p className="text-sm text-[#4B5563] mt-1 font-normal">
-                Select the truck configuration to load engine-specific wiring schematics and nominal tolerances.
+                Select a registered truck from the live fleet database to load VIN, engine, and tolerances.
               </p>
             </div>
 
             <div className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {loadingTrucks ? (
+                <div className="flex items-center gap-3 text-sm text-[#6B7280]">
+                  <Loader2 className="w-4 h-4 animate-spin text-[#E5402C]" />
+                  Loading fleet from backend...
+                </div>
+              ) : (
                 <div>
                   <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
-                    Truck Model
+                    Select Truck Unit
                   </label>
                   <select
-                    value={truckModel}
-                    onChange={(e) => setTruckModel(e.target.value)}
+                    value={selectedTruckId}
+                    onChange={(e) => setSelectedTruckId(e.target.value)}
                     className="w-full h-12 px-4 bg-[#FAFBFB] text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
                   >
-                    <option value="Kenworth T680 Next Gen">Kenworth T680 Next Gen</option>
-                    <option value="Kenworth W990">Kenworth W990</option>
-                    <option value="Peterbilt 579 UltraLoft">Peterbilt 579 UltraLoft</option>
-                    <option value="Peterbilt 389 Extended Hood">Peterbilt 389 Extended Hood</option>
+                    {trucks.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.brand} {t.model} ({t.year}) — VIN: {t.vin}
+                      </option>
+                    ))}
                   </select>
+                  <p className="text-xs text-[#6B7280] mt-2">{trucks.length} trucks loaded from backend database</p>
                 </div>
+              )}
 
-                <div>
-                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
-                    Powertrain / Engine
-                  </label>
-                  <select
-                    value={engine}
-                    onChange={(e) => setEngine(e.target.value)}
-                    className="w-full h-12 px-4 bg-[#FAFBFB] text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
-                  >
-                    <option value="PACCAR MX-13 455 HP">PACCAR MX-13 455 HP</option>
-                    <option value="PACCAR MX-13 510 HP">PACCAR MX-13 510 HP</option>
-                    <option value="PACCAR MX-11 430 HP">PACCAR MX-11 430 HP</option>
-                    <option value="Cummins X15 Efficiency">Cummins X15 Efficiency Series</option>
-                  </select>
+              {error && (
+                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-xl border border-red-200">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  {error}
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
-                    Model Year
-                  </label>
-                  <input
-                    type="text"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                    className="w-full h-12 px-4 bg-[#FAFBFB] text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
-                    Odometer (Miles)
-                  </label>
-                  <input
-                    type="text"
-                    value={mileage}
-                    onChange={(e) => setMileage(e.target.value)}
-                    className="w-full h-12 px-4 bg-[#FAFBFB] text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
-                    VIN #
-                  </label>
-                  <input
-                    type="text"
-                    value={vin}
-                    onChange={(e) => setVin(e.target.value)}
-                    className="w-full h-12 px-4 font-mono font-semibold bg-[#FAFBFB] text-[#111827] text-sm rounded-xl border border-black/[0.12] focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
             <div className="flex justify-end pt-6 border-t border-black/[0.06]">
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-[#E5402C] hover:bg-[#CF3722] text-white text-sm font-bold tracking-tight shadow-[0_4px_16px_rgba(229,64,44,0.25)] transition-all"
+                disabled={!selectedTruckId || loadingTrucks}
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-[#E5402C] hover:bg-[#CF3722] disabled:opacity-50 text-white text-sm font-bold tracking-tight shadow-[0_4px_16px_rgba(229,64,44,0.25)] transition-all"
               >
                 <span>Continue to Symptoms</span>
                 <ArrowRight className="w-4 h-4" />
+
               </button>
             </div>
           </div>
