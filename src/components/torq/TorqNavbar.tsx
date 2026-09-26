@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Menu, X, Cpu, Sparkles } from "lucide-react";
+import { Menu, X, ArrowRight, Wrench } from "lucide-react";
 import { PillButton } from "./PillButton";
 
 export const TorqNavbar: React.FC = () => {
@@ -22,18 +22,20 @@ export const TorqNavbar: React.FC = () => {
     { label: "Diagnostics", href: "/diagnostics/TRQ-2026-0941" },
     { label: "Fleet Intelligence", href: "/fleet" },
     { label: "Reports", href: "/reports/TRQ-2026-0941" },
-    { label: "Docs", href: "#capabilities" },
+    { label: "Capabilities", href: "#capabilities" },
   ];
 
   return (
-    <header
-      className={`sticky top-0 z-50 w-full bg-white transition-all duration-200 ${
-        scrolled ? "shadow-[0_4px_20px_rgba(0,0,0,0.06)] border-b border-[#F6F6F5]" : "border-b border-transparent"
-      }`}
-    >
-      <div className="max-w-[1280px] mx-auto px-6 h-[72px] flex items-center justify-between">
-        
-        {/* Left: TORQ Logo ('T' square badge + bold uppercase 'TORQ' wordmark) */}
+    <header className="sticky top-4 z-50 w-full px-4 sm:px-6 pointer-events-none transition-all duration-300">
+      {/* FLOATING CURVED NAVBAR CONTAINER */}
+      <div
+        className={`max-w-[1240px] mx-auto pointer-events-auto rounded-full bg-white/95 backdrop-blur-md border border-black/[0.08] px-5 sm:px-7 h-[68px] flex items-center justify-between transition-all duration-300 ${
+          scrolled
+            ? "shadow-[0_12px_36px_rgba(0,0,0,0.1)] border-black/[0.12] bg-white/98"
+            : "shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
+        }`}
+      >
+        {/* Left: TORQ Brand Logo ('T' square badge + bold uppercase 'TORQ' wordmark) */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 bg-[#E5402C] rounded-xl flex items-center justify-center text-white font-bold text-lg tracking-tight shadow-sm group-hover:bg-[#CF3722] transition-colors">
             <span className="font-sans font-extrabold text-xl leading-none">
@@ -56,109 +58,76 @@ export const TorqNavbar: React.FC = () => {
             <Link
               key={link.label}
               href={link.href}
-              className="text-[14px] font-medium text-[#1A1A1A] hover:text-[#E5402C] transition-colors"
+              className="text-[14px] font-medium text-[#374151] hover:text-[#E5402C] transition-colors"
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        {/* Right Actions */}
-        <div className="hidden xl:flex items-center gap-3">
-          
-          {/* AI Engine Status Badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#FAF4F2] border border-[#F6C9BE]/70 rounded-full text-xs text-[#1A1A1A]">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-medium text-[11px] text-[#6E6E6E]">Groq · Llama 3.3 70B:</span>
-            <span className="font-semibold text-[11px] text-[#E5402C]">Active</span>
-          </div>
-
-          {/* Search Icon */}
-          <button
-            type="button"
-            aria-label="Search Diagnostic Database"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[#1A1A1A] hover:text-[#E5402C] hover:bg-[#F6F6F5] transition-colors"
-          >
-            <Search className="w-4 h-4 stroke-[1.75]" />
-          </button>
-
-          {/* Right Pills */}
-          <Link href="/diagnostics/new">
-            <PillButton variant="outline" size="sm">
-              New Diagnosis
-            </PillButton>
-          </Link>
-
+        {/* Right Actions: Apple HIG Pill CTAs (No Groq Pill, No Search Icon) */}
+        <div className="hidden lg:flex items-center gap-3">
           <Link href="/dashboard">
             <PillButton variant="outline" size="sm">
               Session History
             </PillButton>
           </Link>
 
-          <Link href="/fleet">
-            <PillButton variant="light" size="sm" showIcon={false}>
-              Fleet Portal
+          <Link href="/diagnostics/new">
+            <PillButton variant="solid" size="sm">
+              New Diagnosis
             </PillButton>
           </Link>
-
         </div>
 
-        {/* Mobile / Tablet Compact Right Action */}
-        <div className="flex xl:hidden items-center gap-2">
+        {/* Mobile / Tablet Compact Toggle */}
+        <div className="flex lg:hidden items-center gap-2">
           <Link href="/diagnostics/new">
             <PillButton variant="solid" size="sm" showIcon={false}>
-              New Diagnosis
+              New
             </PillButton>
           </Link>
 
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-[#1A1A1A] hover:text-[#E5402C] transition-colors"
+            className="p-2 rounded-full text-[#111827] hover:text-[#E5402C] hover:bg-gray-100 transition-colors"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
-
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu Dropdown - Floating Curved Style */}
       {mobileMenuOpen && (
-        <div className="xl:hidden bg-white border-b border-[#F6F6F5] px-6 py-6 shadow-xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-150">
-          
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FAF4F2] border border-[#F6C9BE]/70 rounded-full text-xs text-[#1A1A1A] w-fit">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[11px] text-[#6E6E6E]">Groq Llama 3.3 70B:</span>
-            <span className="font-semibold text-[11px] text-[#E5402C]">Active Engine</span>
-          </div>
-
+        <div className="lg:hidden pointer-events-auto max-w-[1240px] mx-auto mt-2 rounded-[24px] bg-white/95 backdrop-blur-md border border-black/[0.08] px-6 py-6 shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
           <nav className="flex flex-col space-y-3">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-base font-medium text-[#1A1A1A] hover:text-[#E5402C] py-1"
+                className="text-base font-semibold text-[#111827] hover:text-[#E5402C] py-1 transition-colors"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          <div className="pt-4 border-t border-[#F6F6F5] flex flex-col gap-2.5">
-            <Link href="/diagnostics/new">
-              <PillButton variant="solid" size="md" className="w-full">
+          <div className="pt-4 border-t border-black/[0.06] flex flex-col gap-2.5">
+            <Link href="/diagnostics/new" onClick={() => setMobileMenuOpen(false)}>
+              <PillButton variant="solid" size="md" className="w-full justify-center">
                 New Diagnosis
               </PillButton>
             </Link>
-            <Link href="/dashboard">
-              <PillButton variant="outline" size="md" className="w-full">
+            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+              <PillButton variant="outline" size="md" className="w-full justify-center">
                 Session History
               </PillButton>
             </Link>
-            <Link href="/fleet">
-              <PillButton variant="light" size="md" showIcon={false} className="w-full">
+            <Link href="/fleet" onClick={() => setMobileMenuOpen(false)}>
+              <PillButton variant="light" size="md" showIcon={false} className="w-full justify-center">
                 Fleet Portal
               </PillButton>
             </Link>
