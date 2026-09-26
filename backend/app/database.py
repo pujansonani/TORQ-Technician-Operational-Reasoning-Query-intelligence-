@@ -11,13 +11,19 @@ from app.config import get_settings
 
 _settings = get_settings()
 
-engine = create_async_engine(
-    _settings.database_url,
-    echo=_settings.debug,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10,
-)
+if _settings.database_url.startswith("sqlite"):
+    engine = create_async_engine(
+        _settings.database_url,
+        echo=_settings.debug,
+    )
+else:
+    engine = create_async_engine(
+        _settings.database_url,
+        echo=_settings.debug,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=10,
+    )
 
 async_session_factory = async_sessionmaker(
     engine,

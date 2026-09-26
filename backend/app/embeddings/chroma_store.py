@@ -25,11 +25,7 @@ class ChromaStore:
 
     def __init__(self, persist_dir: str = "./chroma_data"):
         logger.info("Initializing ChromaDB at '%s'...", persist_dir)
-        self._client = chromadb.Client(ChromaSettings(
-            persist_directory=persist_dir,
-            anonymized_telemetry=False,
-            is_persistent=True,
-        ))
+        self._client = chromadb.PersistentClient(path=persist_dir)
         self._embedding_service = get_embedding_service()
         self._collection = self._client.get_or_create_collection(
             name=COLLECTION_NAME,

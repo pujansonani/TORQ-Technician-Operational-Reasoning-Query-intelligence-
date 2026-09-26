@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     """Application-wide settings, loaded from environment variables."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(".env", "../.env"),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -28,12 +28,12 @@ class Settings(BaseSettings):
     debug: bool = False
     cors_origins: str = "http://localhost:3000"
 
-    # ── Database (PostgreSQL via Supabase) ─────────────────────────────
+    # ── Database (PostgreSQL or SQLite fallback) ──────────────────────
     database_url: str = Field(
-        ...,
+        default="sqlite+aiosqlite:///torq.db",
         description=(
-            "Async PostgreSQL connection string. "
-            "Example: postgresql+asyncpg://user:pass@host:5432/dbname"
+            "Async DB connection string. Defaults to local SQLite (sqlite+aiosqlite:///torq.db). "
+            "For PostgreSQL / Supabase / Docker: postgresql+asyncpg://user:pass@host:5432/dbname"
         ),
     )
 
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
 
     # ── Embeddings ────────────────────────────────────────────────────
     embedding_model: str = "all-MiniLM-L6-v2"
-    chroma_persist_dir: str = "/app/chroma_data"
+    chroma_persist_dir: str = "./chroma_data"
 
     # ── RAG settings ──────────────────────────────────────────────────
     rag_top_k: int = 5

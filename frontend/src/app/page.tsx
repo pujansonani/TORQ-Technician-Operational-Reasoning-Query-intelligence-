@@ -37,11 +37,10 @@ export default function HomePage() {
     setError("");
     storeLoading();
     try {
-      const dtcCodes = Array.isArray(data.dtc_codes)
-        ? data.dtc_codes
-        : typeof data.dtc_codes === "string"
-        ? (data.dtc_codes as string).split(",").map((s) => s.trim()).filter(Boolean)
-        : [];
+      const dtcCodes = data.dtc_codes
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
 
       const response = await startDiagnosis({
         truck_id: data.truck_id,

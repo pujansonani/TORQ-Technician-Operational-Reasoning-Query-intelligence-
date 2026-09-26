@@ -221,11 +221,6 @@ async def seed_repairs(db: AsyncSession, trucks: list[Truck], dtc_entries: list[
 async def main():
     logger.info("🔧 TORQ Seed Script — Loading demo data...")
 
-    # Check for existing data
-    async with async_session_factory() as db:
-        result = await db.execute(text("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'"))
-        table_count = result.scalar()
-
     # Create tables
     await create_tables()
 
