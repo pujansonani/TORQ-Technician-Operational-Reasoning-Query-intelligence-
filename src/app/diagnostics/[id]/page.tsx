@@ -17,7 +17,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { fetchSession, type SessionState } from "@/lib/api";
+import { fetchSession, submitTestResult, type SessionState } from "@/lib/api";
 
 export default function DiagnosisResultPage() {
   const params = useParams();
@@ -26,6 +26,33 @@ export default function DiagnosisResultPage() {
   const [session, setSession] = useState<SessionState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [testOutcome, setTestOutcome] = useState<"pass" | "fail" | "inconclusive">("fail");
+  const [testNotes, setTestNotes] = useState<string>("");
+  const [isSubmittingTest, setIsSubmittingTest] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleSubmitTest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!session?.recommended_test || isSubmittingTest) return;
+    setIsSubmittingTest(true);
+    setSubmitError(null);
+    try {
+      const resp = await submitTestResult(sessionId, {
+        test_id: session.recommended_test.test_id,
+        result: testOutcome,
+        notes: testNotes.trim() || `Marked as ${testOutcome.toUpperCase()}`,
+      });
+      // Re-fetch fresh full session state
+      const freshSession = await fetchSession(sessionId);
+      setSession(freshSession);
+      setTestNotes("");
+    } catch (err: any) {
+      setSubmitError(err.message || "Failed to submit test outcome");
+    } finally {
+      setIsSubmittingTest(false);
+    }
+  };
 
   useEffect(() => {
     if (!sessionId) return;
@@ -98,6 +125,12 @@ export default function DiagnosisResultPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            <Link href={`/reports/${session.session_id}`}>
+              <button type="button" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-black/[0.1] bg-white hover:bg-gray-50 text-xs font-bold text-[#111827] shadow-sm transition-all">
+                <FileText className="w-4 h-4 text-[#E5402C]" />
+                <span>View Full Report</span>
+              </button>
+            </Link>
             <Link href="/diagnostics/new">
               <button type="button" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#E5402C] hover:bg-[#CF3722] text-white text-xs font-bold tracking-tight shadow-[0_4px_16px_rgba(229,64,44,0.25)] transition-all">
                 <Wrench className="w-4 h-4" />
@@ -106,6 +139,29 @@ export default function DiagnosisResultPage() {
             </Link>
           </div>
         </div>
+
+        {/* ROOT CAUSE CONFIRMED BANNER */}
+        {session.root_cause && (
+          <div className="p-6 rounded-[24px] bg-gradient-to-r from-emerald-50 via-white to-emerald-50/40 border border-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-800">
+                  DIAGNOSIS COMPLETE • ROOT CAUSE CONFIRMED
+                </span>
+                <h3 className="text-xl font-extrabold text-[#111827]">{session.root_cause}</h3>
+              </div>
+            </div>
+            <Link href={`/reports/${session.session_id}`}>
+              <button type="button" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-sm transition-all shrink-0">
+                <FileText className="w-4 h-4" />
+                <span>View Service Report</span>
+              </button>
+            </Link>
+          </div>
+        )}
 
         {/* TOP BANNER: LEADING HYPOTHESIS */}
         {topCandidate && (
@@ -153,22 +209,139 @@ export default function DiagnosisResultPage() {
           {/* LEFT: RECOMMENDED TEST + EVIDENCE */}
           <div className="lg:col-span-7 space-y-8">
 
-            {/* NEXT BEST TEST */}
+            {/* NEXT BEST TEST / INTERACTIVE SUBMISSION */}
             {session.recommended_test && (
-              <div className="p-7 bg-white rounded-[24px] border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-[#E5402C] text-white">NEXT BEST TEST</span>
+              <div className="p-7 bg-white rounded-[24px] border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
+                <div className="flex items-center justify-between">
+                  <span className={`inline-flex px-3 py-1 rounded-full text-[11px] font-mono font-bold ${
+                    session.status === "resolved"
+                      ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                      : "bg-[#E5402C] text-white"
+                  }`}>
+                    {session.status === "resolved" ? "ADDITIONAL DIAGNOSTIC TEST AVAILABLE" : "RECOMMENDED NEXT TEST"}
+                  </span>
+                  <span className="text-xs text-[#6B7280] font-mono">
+                    ID: {session.recommended_test.test_id}
+                  </span>
                 </div>
-                <h3 className="text-xl font-extrabold tracking-tight text-[#111827]">{session.recommended_test.description}</h3>
-                <p className="text-sm text-[#4B5563] leading-relaxed">{session.recommended_test.reasoning}</p>
-                <div className="flex flex-wrap gap-2 pt-2">
+                <div>
+                  <h3 className="text-xl font-extrabold tracking-tight text-[#111827]">
+                    {session.recommended_test.description}
+                  </h3>
+                  <p className="text-sm text-[#4B5563] leading-relaxed mt-2">
+                    {session.recommended_test.reasoning}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
                   {session.recommended_test.discriminates_causes.map((c) => (
-                    <span key={c} className="px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold bg-gray-100 text-[#374151] border border-gray-200">{c}</span>
+                    <span key={c} className="px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold bg-gray-100 text-[#374151] border border-gray-200">
+                      {c}
+                    </span>
                   ))}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[#6B7280]">
-                  <Clock className="w-3.5 h-3.5" />
-                  Test type: <span className="font-bold text-[#111827]">{session.recommended_test.test_type}</span>
+
+                {/* TEST EXECUTION FORM */}
+                <form onSubmit={handleSubmitTest} className="pt-4 border-t border-black/[0.06] space-y-4">
+                  <div className="text-xs font-bold text-[#111827] uppercase tracking-wider">
+                    Record Test Outcome
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setTestOutcome("pass")}
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                        testOutcome === "pass"
+                          ? "bg-emerald-500 text-white border-emerald-600 shadow-sm"
+                          : "bg-white hover:bg-gray-50 border-black/[0.1] text-[#374151]"
+                      }`}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>PASS</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTestOutcome("fail")}
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                        testOutcome === "fail"
+                          ? "bg-[#E5402C] text-white border-[#CF3722] shadow-sm"
+                          : "bg-white hover:bg-gray-50 border-black/[0.1] text-[#374151]"
+                      }`}
+                    >
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      <span>FAIL</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTestOutcome("inconclusive")}
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                        testOutcome === "inconclusive"
+                          ? "bg-amber-500 text-white border-amber-600 shadow-sm"
+                          : "bg-white hover:bg-gray-50 border-black/[0.1] text-[#374151]"
+                      }`}
+                    >
+                      <span>INCONCLUSIVE</span>
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-[#4B5563] mb-1">
+                      Technician Notes / Measurements (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={testNotes}
+                      onChange={(e) => setTestNotes(e.target.value)}
+                      placeholder="e.g. Measured 4.1 bar at 1,800 RPM (low)"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-black/[0.1] bg-[#FAFBFB] text-xs text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C]"
+                    />
+                  </div>
+
+                  {submitError && (
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
+                      {submitError}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmittingTest}
+                    className="w-full py-3 rounded-full bg-[#111827] hover:bg-black text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                  >
+                    {isSubmittingTest ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                        <span>Updating Bayesian Reasoner...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Submit Test Result & Update Bayesian Priors</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* ALL TESTS COMPLETED BANNER */}
+            {!session.recommended_test && session.completed_tests.length > 0 && (
+              <div className="p-7 bg-emerald-50/50 rounded-[24px] border border-emerald-300 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-extrabold text-[#111827]">All Diagnostic Tests Completed</h3>
+                <p className="text-xs text-[#4B5563] max-w-md mx-auto">
+                  All diagnostic procedures defined for this DTC have been performed. Bayesian confidence has reached conclusion.
+                </p>
+                <div className="pt-2">
+                  <Link href={`/reports/${session.session_id}`}>
+                    <button type="button" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#E5402C] hover:bg-[#CF3722] text-white text-xs font-bold shadow-md transition-all">
+                      <FileText className="w-4 h-4" />
+                      <span>View Full Service Report →</span>
+                    </button>
+                  </Link>
                 </div>
               </div>
             )}

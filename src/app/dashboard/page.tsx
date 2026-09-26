@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/Badge";
 import { RECENT_DIAGNOSTICS_DATA, FLEET_STATISTICS } from "@/lib/mockData";
 import { useTorqStore } from "@/lib/store";
 import { formatCurrencyINR } from "@/lib/utils";
+import { fetchTrucks, startDiagnosis } from "@/lib/api";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -36,19 +37,37 @@ export default function DashboardPage() {
   const [dtc, setDtc] = useState("SPN 94 / FMI 1");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const handleAnalyze = (e: React.FormEvent) => {
+  const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAnalyzing(true);
-    setTimeout(() => {
-      createNewSession({
-        truckId,
-        truckModel: model,
-        engine,
-        symptomText: symptom,
-        dtc,
-      });
-      router.push(`/diagnostics/${activeSession.id}`);
-    }, 1000);
+    try {
+      const trucks = await fetchTrucks();
+      const matchedTruck = trucks.find(t => 
+        t.id === truckId || 
+        `${t.brand} ${t.model}`.toLowerCase().includes(model.toLowerCase())
+      ) || trucks[0];
+
+      if (matchedTruck) {
+        // Extract SPN / FMI if present, e.g. "SPN 94 / FMI 1" -> "SPN 94 / FMI 1" or first code
+        const resp = await startDiagnosis({
+          truck_id: matchedTruck.id,
+          symptom_text: symptom,
+          dtc_codes: [dtc.trim()],
+        });
+        router.push(`/diagnostics/${resp.session_id}`);
+        return;
+      }
+    } catch (err) {
+      console.warn("Backend startDiagnosis fallback:", err);
+    }
+    createNewSession({
+      truckId,
+      truckModel: model,
+      engine,
+      symptomText: symptom,
+      dtc,
+    });
+    router.push(`/diagnostics/${activeSession.id}`);
   };
 
   return (

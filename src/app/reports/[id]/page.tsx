@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { 
   Printer, 
   Download, 
@@ -10,37 +11,85 @@ import {
   ShieldCheck, 
   Truck, 
   Wrench, 
-  FileText,
-  Clock,
-  Sparkles
+  FileText, 
+  Clock, 
+  Sparkles,
+  Loader2
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { TORQLockBadge } from "@/components/diagnostic/TORQLockBadge";
 import { useTorqStore } from "@/lib/store";
 import { formatCurrencyINR } from "@/lib/utils";
+import { fetchSession, fetchReport, fetchTruck, type SessionState, type Truck as TruckType } from "@/lib/api";
 
-export default function DiagnosticReportPage({ params }: { params: { id: string } }) {
-  const { activeSession } = useTorqStore();
+export default function DiagnosticReportPage() {
+  const params = useParams();
+  const sessionId = (params?.id as string) || "";
+  const { activeSession: fallbackSession } = useTorqStore();
+
+  const [realSession, setRealSession] = useState<SessionState | null>(null);
+  const [realTruck, setRealTruck] = useState<TruckType | null>(null);
+  const [markdownReport, setMarkdownReport] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
+    Promise.all([
+      fetchSession(sessionId).catch(() => null),
+      fetchReport(sessionId).catch(() => ""),
+    ]).then(([sess, rep]) => {
+      if (sess) {
+        setRealSession(sess);
+        if (sess.truck_id) {
+          fetchTruck(sess.truck_id).then(setRealTruck).catch(() => null);
+        }
+      }
+      if (rep) {
+        setMarkdownReport(rep);
+      }
+      setLoading(false);
+    });
+  }, [sessionId]);
 
   const handlePrint = () => {
     window.print();
   };
 
-  const handleExportPDF = () => {
-    window.print();
+  const handleDownloadMarkdown = () => {
+    if (!markdownReport) return;
+    const blob = new Blob([markdownReport], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `TORQ-Report-${sessionId || "session"}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
-  const partsTotal = activeSession.repairEstimate.parts.reduce((sum, p) => sum + p.costINR, 0);
-  const laborTotal = activeSession.repairEstimate.laborHours * activeSession.repairEstimate.laborRateINR;
-  const grandTotal = partsTotal + laborTotal + activeSession.repairEstimate.consumablesINR;
+  const displaySessionId = realSession ? realSession.session_id : fallbackSession.id;
+  const partsList = realSession?.cost_estimate?.parts || fallbackSession.repairEstimate.parts.map(p => ({
+    description: p.name,
+    part_number: p.partNumber,
+    price: p.costINR,
+  }));
+  const laborHours = realSession?.cost_estimate?.labor_hours ?? fallbackSession.repairEstimate.laborHours;
+  const laborRate = realSession?.cost_estimate?.labor_rate_per_hour ?? fallbackSession.repairEstimate.laborRateINR;
+  const consumables = realSession?.cost_estimate?.consumables ?? fallbackSession.repairEstimate.consumablesINR;
+  const grandTotal = realSession?.cost_estimate?.total ?? (
+    fallbackSession.repairEstimate.parts.reduce((s, p) => s + p.costINR, 0) +
+    laborHours * laborRate + consumables
+  );
 
   return (
     <AppShell>
       <div className="max-w-4xl mx-auto space-y-8">
         
-        {/* ACTION BAR (Hidden in print) - Apple HIG Pill Controls */}
+        {/* ACTION BAR (Hidden in print) */}
         <div className="flex items-center justify-between no-print pb-4 border-b border-black/[0.06]">
-          <Link href={`/diagnostics/${activeSession.id}`}>
+          <Link href={`/diagnostics/${sessionId || displaySessionId}`}>
             <button
               type="button"
               className="inline-flex items-center gap-2 text-xs font-bold text-[#4B5563] hover:text-[#111827] px-4 py-2 rounded-full border border-black/[0.1] bg-white hover:bg-gray-50 transition-all shadow-sm"
@@ -59,14 +108,25 @@ export default function DiagnosticReportPage({ params }: { params: { id: string 
               <Printer className="w-4 h-4 text-[#E5402C]" />
               <span>Print Report</span>
             </button>
-            <button
-              type="button"
-              onClick={handleExportPDF}
-              className="inline-flex items-center gap-2 text-xs font-bold text-white px-6 py-2.5 rounded-full bg-[#E5402C] hover:bg-[#CF3722] transition-all shadow-[0_4px_16px_rgba(229,64,44,0.25)]"
-            >
-              <Download className="w-4 h-4" />
-              <span>Export PDF</span>
-            </button>
+            {markdownReport ? (
+              <button
+                type="button"
+                onClick={handleDownloadMarkdown}
+                className="inline-flex items-center gap-2 text-xs font-bold text-white px-6 py-2.5 rounded-full bg-[#E5402C] hover:bg-[#CF3722] transition-all shadow-[0_4px_16px_rgba(229,64,44,0.25)]"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Markdown Report</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="inline-flex items-center gap-2 text-xs font-bold text-white px-6 py-2.5 rounded-full bg-[#E5402C] hover:bg-[#CF3722] transition-all shadow-[0_4px_16px_rgba(229,64,44,0.25)]"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export PDF</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -98,7 +158,7 @@ export default function DiagnosticReportPage({ params }: { params: { id: string 
             <div className="text-left sm:text-right space-y-1 text-xs">
               <div>
                 <span className="text-[#6B7280]">Session ID: </span>
-                <span className="font-mono font-bold text-[#111827]">{activeSession.id}</span>
+                <span className="font-mono font-bold text-[#111827]">{displaySessionId}</span>
               </div>
               <div>
                 <span className="text-[#6B7280]">Audit Date: </span>
@@ -118,25 +178,39 @@ export default function DiagnosticReportPage({ params }: { params: { id: string 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 rounded-[18px] bg-[#FAFBFB] border border-black/[0.06] text-xs">
             <div>
               <span className="text-[#6B7280] uppercase font-bold text-[10px] block mb-1">TRUCK UNIT</span>
-              <span className="font-extrabold text-[#111827] font-mono text-sm block">{activeSession.truckId}</span>
-              <span className="text-[#4B5563] block truncate">{activeSession.truckModel}</span>
+              <span className="font-extrabold text-[#111827] font-mono text-sm block">
+                {realTruck ? `${realTruck.brand} ${realTruck.model}` : fallbackSession.truckId}
+              </span>
+              <span className="text-[#4B5563] block truncate">
+                {realTruck ? `VIN: ${realTruck.vin}` : fallbackSession.truckModel}
+              </span>
             </div>
             <div>
               <span className="text-[#6B7280] uppercase font-bold text-[10px] block mb-1">POWERTRAIN</span>
-              <span className="font-bold text-[#111827] block">{activeSession.engine}</span>
-              <span className="text-[#4B5563] block">{activeSession.mileage.toLocaleString()} mi</span>
+              <span className="font-bold text-[#111827] block">
+                {realTruck ? realTruck.engine : fallbackSession.engine}
+              </span>
+              <span className="text-[#4B5563] block">
+                {realTruck ? `${realTruck.mileage_km.toLocaleString()} km` : `${fallbackSession.mileage.toLocaleString()} mi`}
+              </span>
             </div>
             <div>
               <span className="text-[#6B7280] uppercase font-bold text-[10px] block mb-1">ACTIVE DTC</span>
-              <span className="font-bold text-[#E5402C] font-mono text-sm block">{activeSession.dtc}</span>
-              <span className="text-[#4B5563] block truncate">SPN {activeSession.spn} / FMI {activeSession.fmi}</span>
+              <span className="font-bold text-[#E5402C] font-mono text-sm block">
+                {realSession ? realSession.dtc_codes.join(", ") : fallbackSession.dtc}
+              </span>
+              <span className="text-[#4B5563] block truncate">
+                {realSession ? `Severity: High` : `SPN ${fallbackSession.spn} / FMI ${fallbackSession.fmi}`}
+              </span>
             </div>
             <div>
               <span className="text-[#6B7280] uppercase font-bold text-[10px] block mb-1">DIAGNOSTIC STATUS</span>
               <span className="font-bold text-emerald-700 block text-sm">
-                {activeSession.status === "Root-Cause-Confirmed" ? "CONFIRMED" : "ASSESSED"}
+                {realSession ? realSession.status.toUpperCase() : "CONFIRMED"}
               </span>
-              <span className="text-emerald-600 block">100% Verified</span>
+              <span className="text-emerald-600 block">
+                {realSession ? `${Math.round(realSession.confidence_score)}% Confidence` : "100% Verified"}
+              </span>
             </div>
           </div>
 
@@ -146,7 +220,7 @@ export default function DiagnosticReportPage({ params }: { params: { id: string 
               1. REPORTED SYMPTOMS & FIELD OBSERVATIONS
             </h2>
             <div className="p-5 rounded-[16px] bg-[#FAFBFB] border border-black/[0.06] text-xs leading-relaxed text-[#111827] italic font-medium">
-              &ldquo;{activeSession.symptomText}&rdquo;
+              &ldquo;{realSession ? realSession.symptom_text : fallbackSession.symptomText}&rdquo;
             </div>
           </div>
 
@@ -156,15 +230,27 @@ export default function DiagnosticReportPage({ params }: { params: { id: string 
               2. OEM EVIDENCE & BULLETINS SYNTHESIZED
             </h2>
             <div className="space-y-2.5">
-              {activeSession.evidence.map((ev) => (
-                <div key={ev.id} className="p-4 rounded-[16px] bg-white border border-black/[0.08] text-xs space-y-1 shadow-sm">
-                  <div className="flex items-center justify-between text-[#6B7280]">
-                    <span className="font-bold text-[#111827]">{ev.sourceType} • {ev.source}</span>
-                    <span className="font-mono font-bold text-[#E5402C]">{ev.relevanceScore}% Correlation</span>
+              {realSession && realSession.citations.length > 0 ? (
+                realSession.citations.map((c, idx) => (
+                  <div key={idx} className="p-4 rounded-[16px] bg-white border border-black/[0.08] text-xs space-y-1 shadow-sm">
+                    <div className="flex items-center justify-between text-[#6B7280]">
+                      <span className="font-bold text-[#111827]">{c.source}</span>
+                      <span className="font-mono font-bold text-[#E5402C]">{Math.round(c.relevance_score * 100)}% Correlation</span>
+                    </div>
+                    <p className="text-[#374151] font-mono text-[11px]">&ldquo;{c.snippet}&rdquo;</p>
                   </div>
-                  <p className="text-[#374151]">&ldquo;{ev.claim}&rdquo;</p>
-                </div>
-              ))}
+                ))
+              ) : (
+                fallbackSession.evidence.map((ev) => (
+                  <div key={ev.id} className="p-4 rounded-[16px] bg-white border border-black/[0.08] text-xs space-y-1 shadow-sm">
+                    <div className="flex items-center justify-between text-[#6B7280]">
+                      <span className="font-bold text-[#111827]">{ev.sourceType} • {ev.source}</span>
+                      <span className="font-mono font-bold text-[#E5402C]">{ev.relevanceScore}% Correlation</span>
+                    </div>
+                    <p className="text-[#374151]">&ldquo;{ev.claim}&rdquo;</p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -178,26 +264,36 @@ export default function DiagnosticReportPage({ params }: { params: { id: string 
                 <thead className="bg-[#FAFBFB] border-b border-black/[0.06] text-[#6B7280] font-bold uppercase text-[10px] tracking-wider">
                   <tr>
                     <th className="p-3.5">Test Procedure</th>
-                    <th className="p-3.5">Nominal Specification</th>
-                    <th className="p-3.5">Observed Value</th>
+                    <th className="p-3.5">Observations / Notes</th>
                     <th className="p-3.5 text-right">Outcome</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/[0.05]">
-                  <tr>
-                    <td className="p-3.5 font-bold text-[#111827]">
-                      Low-Pressure Fuel Delivery Supply Test
-                    </td>
-                    <td className="p-3.5 font-mono text-[#4B5563]">
-                      5.5 – 6.5 bar (80 – 94 PSI)
-                    </td>
-                    <td className="p-3.5 font-mono text-[#111827] font-bold">
-                      {activeSession.testHistory[0]?.measuredValue || "4.1 bar (Below Spec)"}
-                    </td>
-                    <td className="p-3.5 text-right font-mono font-bold text-[#E5402C]">
-                      {activeSession.testHistory[0]?.result || "FAIL"}
-                    </td>
-                  </tr>
+                  {realSession && realSession.completed_tests.length > 0 ? (
+                    realSession.completed_tests.map((t, idx) => (
+                      <tr key={idx}>
+                        <td className="p-3.5 font-bold text-[#111827] font-mono">{t.test_id}</td>
+                        <td className="p-3.5 text-[#4B5563]">{t.notes || "Completed"}</td>
+                        <td className={`p-3.5 text-right font-mono font-bold ${
+                          t.result === "pass" ? "text-emerald-700" : "text-[#E5402C]"
+                        }`}>
+                          {t.result.toUpperCase()}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td className="p-3.5 font-bold text-[#111827]">
+                        Low-Pressure Fuel Delivery Supply Test
+                      </td>
+                      <td className="p-3.5 font-mono text-[#4B5563]">
+                        {fallbackSession.testHistory[0]?.measuredValue || "4.1 bar (Below Spec 5.5-6.5 bar)"}
+                      </td>
+                      <td className="p-3.5 text-right font-mono font-bold text-[#E5402C]">
+                        {fallbackSession.testHistory[0]?.result || "FAIL"}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -212,11 +308,11 @@ export default function DiagnosticReportPage({ params }: { params: { id: string 
               <div className="flex items-center gap-2 text-emerald-950 font-extrabold text-sm">
                 <CheckCircle2 className="w-4 h-4 text-emerald-700" />
                 <span>
-                  {activeSession.confirmedRootCause || "Primary Fuel Restriction at Water Separator & Secondary Micron Filter"}
+                  {realSession?.root_cause || realSession?.candidate_causes[0]?.name || fallbackSession.confirmedRootCause || "Root Cause Confirmed"}
                 </span>
               </div>
               <p className="text-xs text-emerald-900/90 leading-relaxed font-medium">
-                Replaced primary spin-on filter element and water separator bowl assembly. Purged low-pressure fuel circuit. Verified rail pressure returned to 6.2 bar at 1,800 RPM. Cleared fault code SPN 94 / FMI 1.
+                {realSession?.candidate_causes[0]?.source_snippet || "Diagnostic analysis verified fault condition against OEM service literature. Follow prescribed service procedures."}
               </p>
             </div>
           </div>
@@ -236,22 +332,22 @@ export default function DiagnosticReportPage({ params }: { params: { id: string 
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/[0.05]">
-                  {activeSession.repairEstimate.parts.map((p) => (
-                    <tr key={p.partNumber}>
-                      <td className="p-3.5 text-[#111827] font-medium">{p.name}</td>
-                      <td className="p-3.5 font-mono text-[#6B7280]">{p.partNumber}</td>
-                      <td className="p-3.5 text-right font-mono font-bold text-[#111827]">{formatCurrencyINR(p.costINR)}</td>
+                  {partsList.map((p: any, idx: number) => (
+                    <tr key={idx}>
+                      <td className="p-3.5 text-[#111827] font-medium">{p.description}</td>
+                      <td className="p-3.5 font-mono text-[#6B7280]">{p.part_number || `P-${idx+1}`}</td>
+                      <td className="p-3.5 text-right font-mono font-bold text-[#111827]">{formatCurrencyINR(p.price)}</td>
                     </tr>
                   ))}
                   <tr>
-                    <td className="p-3.5 text-[#111827] font-medium">Technician Labor (Diagnostic & Replacement)</td>
-                    <td className="p-3.5 font-mono text-[#6B7280]">{activeSession.repairEstimate.laborHours} hrs @ {formatCurrencyINR(activeSession.repairEstimate.laborRateINR)}</td>
-                    <td className="p-3.5 text-right font-mono font-bold text-[#111827]">{formatCurrencyINR(laborTotal)}</td>
+                    <td className="p-3.5 text-[#111827] font-medium">Technician Labor (Diagnostic & Repair)</td>
+                    <td className="p-3.5 font-mono text-[#6B7280]">{laborHours} hrs @ {formatCurrencyINR(laborRate)}/hr</td>
+                    <td className="p-3.5 text-right font-mono font-bold text-[#111827]">{formatCurrencyINR(laborHours * laborRate)}</td>
                   </tr>
                   <tr>
-                    <td className="p-3.5 text-[#111827] font-medium">Workshop Consumables & Environmental Disposal</td>
-                    <td className="p-3.5 font-mono text-[#6B7280]">Standard Kit</td>
-                    <td className="p-3.5 text-right font-mono font-bold text-[#111827]">{formatCurrencyINR(activeSession.repairEstimate.consumablesINR)}</td>
+                    <td className="p-3.5 text-[#111827] font-medium">Workshop Consumables & Environmental Compliance</td>
+                    <td className="p-3.5 font-mono text-[#6B7280]">Standard Tier</td>
+                    <td className="p-3.5 text-right font-mono font-bold text-[#111827]">{formatCurrencyINR(consumables)}</td>
                   </tr>
                   <tr className="bg-[#FAFBFB] font-extrabold text-sm">
                     <td colSpan={2} className="p-4 text-[#111827]">TOTAL ESTIMATED REPAIR</td>

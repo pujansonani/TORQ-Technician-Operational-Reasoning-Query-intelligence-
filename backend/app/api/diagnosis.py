@@ -95,16 +95,43 @@ async def start_diagnosis(
     if not truck_obj:
         raise HTTPException(status_code=404, detail="Truck not found")
 
-    # Look up the primary DTC code
+    # Look up the primary DTC code with flexible formatting
     primary_dtc = request.dtc_codes[0]
     dtc_result = await db.execute(select(DtcKb).where(DtcKb.code == primary_dtc))
     dtc_entry_obj = dtc_result.scalar_one_or_none()
 
+    if not dtc_entry_obj and len(request.dtc_codes) >= 2:
+        alt_code = f"SPN-{request.dtc_codes[0]}-FMI-{request.dtc_codes[1]}"
+        dtc_result = await db.execute(select(DtcKb).where(DtcKb.code == alt_code))
+        dtc_entry_obj = dtc_result.scalar_one_or_none()
+        if dtc_entry_obj:
+            primary_dtc = alt_code
+
+    if not dtc_entry_obj:
+        import re
+        clean = primary_dtc.replace(" ", "").replace("/", "-").upper()
+        if not clean.startswith("SPN-") and "FMI" in clean:
+            clean = f"SPN-{clean}"
+        dtc_result = await db.execute(select(DtcKb).where(DtcKb.code == clean))
+        dtc_entry_obj = dtc_result.scalar_one_or_none()
+        if dtc_entry_obj:
+            primary_dtc = clean
+
+    if not dtc_entry_obj:
+        import re
+        nums = re.findall(r'\d+', primary_dtc)
+        if nums:
+            spn_candidate = nums[0]
+            dtc_result = await db.execute(select(DtcKb).where(DtcKb.code.ilike(f"%{spn_candidate}%")))
+            dtc_entry_obj = dtc_result.scalars().first()
+            if dtc_entry_obj:
+                primary_dtc = dtc_entry_obj.code
+
     if not dtc_entry_obj:
         raise HTTPException(
             status_code=404,
-            detail=f"DTC code '{primary_dtc}' not found in knowledge base. "
-                   f"Ensure the code is in SAE J1939 format (e.g., SPN-FMI).",
+            detail=f"DTC code '{request.dtc_codes[0]}' not found in knowledge base. "
+                   f"Ensure the code is in SAE J1939 format (e.g., SPN-100-FMI-4).",
         )
 
     dtc_entry = {
@@ -161,7 +188,7 @@ async def start_diagnosis(
     session = Session(
         truck_id=request.truck_id,
         symptom_text=request.symptom_text,
-        dtc_codes=request.dtc_codes,
+        dtc_codes=[primary_dtc],
         status="active",
     )
     db.add(session)
@@ -172,7 +199,7 @@ async def start_diagnosis(
         session_id=session.id,
         type="diagnosis_started",
         payload={
-            "dtc_codes": request.dtc_codes,
+            "dtc_codes": [primary_dtc],
             "priors": {k: round(v, 4) for k, v in priors.items()},
             "recommended_test_id": recommended_test.test_id if recommended_test else None,
         },
@@ -253,7 +280,7 @@ async def submit_test_result(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    if session.status != "active":
+    if session.status not in ("active", "resolved"):
         raise HTTPException(status_code=400, detail="Session is no longer active")
 
     # Load DTC entry
@@ -359,6 +386,10 @@ async def submit_test_result(
     # Cost estimate for top cause
     top_cause_id, _ = engine.get_top_cause(updated_posteriors)
     cost_est = await cost_estimator.estimate(db, top_cause_id, dtc_entry)
+
+    # RAG citations
+    rag_service = get_rag_service()
+    _, citations = rag_service.retrieve(session.symptom_text, session.dtc_codes)
 
     # ── Console logging for terminal visibility ──
     logger.info("=" * 72)
