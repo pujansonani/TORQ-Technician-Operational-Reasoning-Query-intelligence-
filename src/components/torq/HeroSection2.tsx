@@ -12,30 +12,29 @@ export const HeroSection2: React.FC = () => {
   return (
     <section className="relative w-full bg-white pt-12 sm:pt-16 pb-20 lg:pb-28 overflow-hidden">
       
-      {/* THIN SPARSE RED CURVED LINE-ART DOODLES (Rerouted & placed behind content so it NEVER crosses through stats) */}
-      <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
+      {/* THIN SPARSE RED CURVED LINE-ART DOODLES BEHIND TRUCK IMAGE ONLY (Never crossing stats) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <svg
           className="w-full h-full"
           viewBox="0 0 1440 700"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Subtle arc rerouted above and around the text/stat region */}
+          {/* Subtle arcs sweeping strictly in the right half behind the truck */}
           <path
-            d="M 50 120 C 350 40, 650 180, 950 100 C 1180 40, 1340 180, 1500 120"
+            d="M 680 140 C 880 70, 1140 230, 1420 130"
             stroke="#E5402C"
             strokeWidth="1.2"
             strokeDasharray="4 6"
-            opacity="0.16"
+            opacity="0.18"
           />
           <path
-            d="M -40 380 C 220 320, 480 340, 720 280 C 1020 200, 1280 420, 1520 320"
+            d="M 740 420 C 960 340, 1200 460, 1460 360"
             stroke="#E5402C"
             strokeWidth="1"
-            opacity="0.10"
+            opacity="0.14"
           />
-          <circle cx="950" cy="100" r="3.5" fill="#E5402C" opacity="0.25" />
-          <circle cx="720" cy="280" r="3.5" fill="#E5402C" opacity="0.25" />
+          <circle cx="1140" cy="230" r="3.5" fill="#E5402C" opacity="0.25" />
         </svg>
       </div>
 
@@ -44,24 +43,24 @@ export const HeroSection2: React.FC = () => {
         {/* EDITORIAL SPLIT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           
-          {/* LEFT SIDE: HEADLINE & ACTIONS (6 COLS) */}
-          <div className="lg:col-span-6 space-y-8 z-10">
+          {/* LEFT SIDE: HEADLINE, CTAs, STATS, SUPPORTING PARAGRAPH (6 COLS - ONE UNIFIED VERTICAL FLOW) */}
+          <div className="lg:col-span-6 space-y-7 z-10">
             
             {/* Eyebrow Label */}
-            <div className="inline-flex items-center gap-2 text-[12px] font-medium tracking-[0.08em] uppercase text-[#9A9A9A]">
+            <div className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[0.08em] uppercase text-[#6B7280]">
               <span className="w-2 h-2 rounded-full bg-[#E5402C]" />
               <span>AI DIAGNOSTIC COPILOT · BUILT FOR PACCAR</span>
             </div>
 
-            {/* 3-Line Display Headline - Apple HIG Bold Italic Hierarchy */}
-            <h1 className="text-[38px] sm:text-[50px] lg:text-[62px] tracking-[-0.03em] text-[#111827] leading-[1.05]">
-              <span className="block font-extrabold">Your fleet&apos;s downtime.</span>
-              <span className="block font-bold text-[#4B5563]">Our diagnosis.</span>
-              <span className="block font-extrabold italic text-[#E5402C]">Welcome to TORQ.</span>
+            {/* UNIFIED 3-LINE HEADLINE (Calm, single sentence, only "diagnosis" and "TORQ" bolded) */}
+            <h1 className="text-[36px] sm:text-[48px] lg:text-[54px] tracking-[-0.03em] text-[#1A1A1A] leading-[1.12] font-normal">
+              <span className="block">Your fleet&apos;s downtime.</span>
+              <span className="block">Our <strong className="font-bold text-[#1A1A1A]">diagnosis</strong>.</span>
+              <span className="block">Welcome to <strong className="font-bold text-[#1A1A1A]">TORQ</strong>.</span>
             </h1>
 
             {/* Two Outlined Pill Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <Link href="/diagnostics/new">
                 <PillButton variant="outline" size="md">
                   Start a diagnosis
@@ -75,46 +74,43 @@ export const HeroSection2: React.FC = () => {
               </Link>
             </div>
 
-            {/* 3 Key Diagnostic Stats (Clean background, strictly isolated from decorative curves) */}
-            <div className="pt-6 border-t border-[#F6F6F5] grid grid-cols-3 gap-4 text-left relative z-20 bg-white/80 backdrop-blur-xs">
+            {/* STATS ROW — Unified baseline alignment, one accent color (87% confidence), no stray lines */}
+            <div className="pt-6 border-t border-black/[0.08] grid grid-cols-3 gap-4 text-left">
               <div>
-                <span className="block text-2xl font-normal text-[#1A1A1A] tracking-tight font-mono">15,000+</span>
-                <span className="text-[12px] text-[#6E6E6E] leading-snug block mt-0.5">DTC codes in knowledge base</span>
+                <span className="block text-2xl font-bold text-[#1A1A1A] tracking-tight font-mono">15,000+</span>
+                <span className="text-[12px] text-[#6B7280] leading-snug block mt-1">DTC codes in knowledge base</span>
               </div>
               <div>
-                <span className="block text-2xl font-normal text-[#E5402C] tracking-tight font-mono">40%</span>
-                <span className="text-[12px] text-[#6E6E6E] leading-snug block mt-0.5">Faster root-cause ID vs. manual</span>
+                <span className="block text-2xl font-bold text-[#1A1A1A] tracking-tight font-mono">40%</span>
+                <span className="text-[12px] text-[#6B7280] leading-snug block mt-1">Faster root-cause ID vs. manual</span>
               </div>
               <div>
-                <span className="block text-2xl font-normal text-emerald-600 tracking-tight font-mono">87%</span>
-                <span className="text-[12px] text-[#6E6E6E] leading-snug block mt-0.5">Avg. diagnostic confidence</span>
+                <span className="block text-2xl font-bold text-[#E5402C] tracking-tight font-mono">87%</span>
+                <span className="text-[12px] text-[#6B7280] leading-snug block mt-1">Avg. diagnostic confidence</span>
               </div>
             </div>
 
-          </div>
-
-          {/* RIGHT SIDE: LARGE TRUCK PHOTO & PACCAR COPILOT COPY (6 COLS) */}
-          <div className="lg:col-span-6 relative flex flex-col items-center lg:items-end">
-            
-            {/* Cutout Truck Photo (Clean studio cutout with soft shadow) */}
-            <div className="relative w-full max-w-[560px] h-[300px] sm:h-[380px] lg:h-[420px] transition-transform duration-500 hover:scale-[1.01]">
-              <Image
-                src="/images/torq_red_truck.jpg"
-                alt="TORQ Supported Heavy Duty Commercial Vehicle Fleet"
-                fill
-                priority
-                className="object-contain object-center drop-shadow-[0_24px_32px_rgba(26,26,26,0.14)]"
-                sizes="(max-width: 1024px) 100vw, 560px"
-              />
-            </div>
-
-            {/* Diagnostic Heritage Paragraph Text (Max width ~340px) */}
-            <div className="w-full max-w-[340px] mt-4 lg:mt-6 text-left self-start lg:self-end">
-              <p className="text-[14px] sm:text-[15px] font-normal text-[#6E6E6E] leading-[1.7]">
+            {/* CONNECTED SUPPORTING PARAGRAPH (Directly under stats, max-w-[380px], completing the vertical flow) */}
+            <div className="pt-2 max-w-[380px]">
+              <p className="text-[14px] font-normal text-[#6B7280] leading-[1.65]">
                 TORQ combines a Bayesian diagnostic engine with retrieval over real repair procedures, so technicians get a ranked, confidence-scored root cause — not a guess — in minutes, not hours.
               </p>
             </div>
 
+          </div>
+
+          {/* RIGHT SIDE: TRUCK PHOTO ALONE WITH CONTACT SHADOW (NO BOX, NO ORPHANED TEXT) */}
+          <div className="lg:col-span-6 relative flex items-center justify-center lg:justify-end">
+            <div className="relative w-full max-w-[620px] aspect-[960/660] transition-transform duration-500 hover:scale-[1.01]">
+              <Image
+                src="/images/torq_red_truck.jpg"
+                alt="TORQ Heavy Duty Commercial Vehicle Fleet Diagnostic Copilot"
+                fill
+                priority
+                className="object-contain object-center"
+                sizes="(max-width: 1024px) 100vw, 620px"
+              />
+            </div>
           </div>
 
         </div>
