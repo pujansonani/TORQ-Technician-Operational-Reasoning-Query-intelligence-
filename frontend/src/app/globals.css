@@ -1,0 +1,140 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222 84% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 84% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 84% 5%;
+    --primary: 207 100% 31%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 349 82% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 207 100% 31%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-surface font-sans text-foreground antialiased;
+  }
+}
+
+@layer components {
+  /* Professional workshop card styling */
+  .torq-card {
+    @apply bg-white rounded-lg border border-surface-300 shadow-card
+           transition-all duration-200 hover:shadow-card-hover;
+  }
+
+  .torq-card-header {
+    @apply px-6 py-4 border-b border-surface-200 flex items-center justify-between;
+  }
+
+  .torq-card-body {
+    @apply px-6 py-5;
+  }
+
+  /* Confidence bar styling */
+  .confidence-bar {
+    @apply h-3 rounded-full bg-surface-200 overflow-hidden relative;
+  }
+
+  .confidence-bar-fill {
+    @apply h-full rounded-full transition-all duration-700 ease-out;
+    width: var(--bar-width);
+  }
+
+  /* Status badges */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .status-badge-active {
+    @apply status-badge bg-primary-50 text-primary-600;
+  }
+
+  .status-badge-resolved {
+    @apply status-badge bg-green-50 text-green-700;
+  }
+
+  .status-badge-escalated {
+    @apply status-badge bg-amber-50 text-amber-700;
+  }
+
+  /* Step timeline */
+  .timeline-connector {
+    @apply absolute left-5 top-10 w-0.5 bg-surface-300;
+    height: calc(100% - 2.5rem);
+  }
+
+  /* Severity indicator */
+  .severity-dot {
+    @apply w-2.5 h-2.5 rounded-full;
+  }
+
+  .severity-1 { @apply bg-blue-400; }
+  .severity-2 { @apply bg-green-400; }
+  .severity-3 { @apply bg-yellow-400; }
+  .severity-4 { @apply bg-orange-500; }
+  .severity-5 { @apply bg-red-600 animate-pulse-slow; }
+
+  /* TORQ-Lock badge */
+  .torq-lock-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs
+           font-mono bg-amber-50 text-amber-700 border border-amber-200;
+  }
+
+  /* Demo data indicator */
+  .demo-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs
+           font-medium bg-violet-50 text-violet-600 border border-violet-200;
+  }
+
+  /* Glassmorphism panel */
+  .glass-panel {
+    @apply bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-lg;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-surface-400 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-surface-500;
+}
+
+/* Print styles for report export */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
+  .torq-card { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
+}
