@@ -79,6 +79,7 @@ class DiagnosisResponse(BaseModel):
     diagnosis_complete: bool = False
     root_cause: str | None = None
     llm_summary: str = ""
+    fleet_intelligence: dict[str, Any] | None = None
 
 
 class SessionState(BaseModel):
@@ -99,3 +100,4 @@ class SessionState(BaseModel):
     root_cause: str | None = None
     llm_summary: str = ""
     truck_info: dict[str, Any] | None = None
+    fleet_intelligence: dict[str, Any] | None = None

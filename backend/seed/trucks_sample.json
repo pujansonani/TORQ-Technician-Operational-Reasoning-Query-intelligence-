@@ -4,5 +4,8 @@
   {"vin": "2NPLHD7X1MT345678", "brand": "Peterbilt", "model": "579", "year": 2023, "engine": "PACCAR MX-13", "mileage_km": 125000},
   {"vin": "2NPLHD7X1MT456789", "brand": "Peterbilt", "model": "389", "year": 2020, "engine": "PACCAR MX-13", "mileage_km": 510000},
   {"vin": "1XKAD49X1NJ567890", "brand": "Kenworth", "model": "T680", "year": 2024, "engine": "PACCAR MX-13", "mileage_km": 45000},
-  {"vin": "3AKJHHDR5NS678901", "brand": "Peterbilt", "model": "579", "year": 2022, "engine": "PACCAR MX-11", "mileage_km": 210000}
+  {"vin": "3AKJHHDR5NS678901", "brand": "Peterbilt", "model": "579", "year": 2022, "engine": "PACCAR MX-11", "mileage_km": 210000},
+  {"vin": "MAT613024N1A12345", "brand": "Tata", "model": "Prima 4928.S", "year": 2023, "engine": "Cummins ISNe 6.7L", "mileage_km": 185000},
+  {"vin": "MB1BAADB4NA098765", "brand": "Ashok Leyland", "model": "Ecomet 1615 HE", "year": 2022, "engine": "H-Series 4-Cyl CRS", "mileage_km": 95000},
+  {"vin": "YV2R4B1A8MB234567", "brand": "Volvo", "model": "FMX 460", "year": 2021, "engine": "Volvo D13A Heavy Duty", "mileage_km": 310000}
 ]
