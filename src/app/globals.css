@@ -24,6 +24,11 @@
   --color-card-active-red: #E5402C;
 }
 
+html {
+  background-color: #FFFFFF;
+  color-scheme: light;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);

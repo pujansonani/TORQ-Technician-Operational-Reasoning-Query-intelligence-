@@ -1,31 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { 
-  ArrowRight, 
-  Plus, 
-  Wrench, 
-  Cpu, 
-  Gauge, 
-  ShieldCheck, 
-  FileCheck,
-  Activity,
-  CheckCircle2,
-  SlidersHorizontal,
-  Layers
-} from "lucide-react";
+import { ArrowRight, Wrench, Cpu, Gauge, ShieldCheck, FileCheck } from "lucide-react";
 import { PillButton } from "./PillButton";
 
 export const HeroSection1: React.FC = () => {
-  const [activeHotspot, setActiveHotspot] = useState(false);
-
   return (
-    <section className="relative w-full bg-[#DCE7DE] py-12 md:py-16 overflow-hidden">
+    <section className="relative w-full bg-[#DCE7DE] py-8 md:py-12 overflow-hidden">
       
-      {/* Faint Abstract Line / Blob Background Decorations */}
-      <div className="absolute inset-0 pointer-events-none opacity-40">
+      {/* Faint Abstract Line Background */}
+      <div className="absolute inset-0 pointer-events-none opacity-30">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <circle cx="10%" cy="20%" r="220" fill="#B7CEC1" opacity="0.3" />
           <circle cx="85%" cy="75%" r="300" fill="#B7CEC1" opacity="0.4" />
@@ -40,59 +26,13 @@ export const HeroSection1: React.FC = () => {
         </svg>
       </div>
 
-      <div className="relative max-w-[1280px] mx-auto px-6">
+      <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6">
         
-        {/* FRAMED ILLUSTRATION CONTAINER */}
-        <div className="relative w-full rounded-[16px] overflow-hidden bg-white shadow-[0_20px_60px_rgba(26,26,26,0.08)] border border-white/60">
+        {/* UNFRAMED FULL-BLEED ILLUSTRATION CONTAINER (Soft 20px radius, no nested browser frame) */}
+        <div className="relative w-full rounded-[20px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
           
-          {/* THIN NAV BAR STRIP ALONG TOP OF ILLUSTRATION (Product Diagnostic Screenshot UI) */}
-          <div className="w-full h-11 bg-white/95 backdrop-blur-sm border-b border-[#F6F6F5] px-4 sm:px-6 flex items-center justify-between z-20 relative">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-1.5">
-                <div className="w-5 h-5 bg-[#E5402C] rounded-[4px] flex items-center justify-center text-white text-[10px] font-black">
-                  T
-                </div>
-                <span className="font-extrabold text-xs tracking-tight text-[#111827]">
-                  TORQ
-                </span>
-              </div>
-              <div className="hidden sm:flex items-center gap-4 text-[11px] font-medium text-[#6E6E6E]">
-                <span className="text-[#1A1A1A] font-semibold">Diagnostic Bay 01</span>
-                <span>J1939 CAN Bus</span>
-                <span>Live Telemetry</span>
-                <span>DAVIE4 Bridge</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="hidden md:inline-flex items-center gap-1 text-[11px] text-[#9A9A9A]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                CAN Link: Active (250 kbps)
-              </span>
-              <div className="flex items-center gap-1.5">
-                <Link href="/dashboard">
-                  <button
-                    type="button"
-                    className="px-2.5 py-1 text-[11px] font-medium text-[#E5402C] border border-[#F6C9BE] rounded-full hover:bg-[#FDF2F0] transition-colors"
-                  >
-                    Session Tracking
-                  </button>
-                </Link>
-                <Link href="/diagnostics/TRQ-2026-0941">
-                  <button
-                    type="button"
-                    className="px-2.5 py-1 text-[11px] font-medium text-white bg-[#E5402C] rounded-full hover:bg-[#CF3722] transition-colors flex items-center gap-1"
-                  >
-                    <Activity className="w-3 h-3" />
-                    <span>Live Diagnosis</span>
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </div>
-
           {/* MAIN ISOMETRIC DIAGNOSTIC BAY VISUAL */}
-          <div className="relative w-full h-[460px] sm:h-[580px] lg:h-[680px]">
+          <div className="relative w-full h-[480px] sm:h-[600px] lg:h-[700px]">
             <Image
               src="/images/torq_diagnostic_bay_iso.jpg"
               alt="TORQ Heavy Duty Truck Service Bay Diagnostic Isometric View"
@@ -102,65 +42,74 @@ export const HeroSection1: React.FC = () => {
               sizes="(max-width: 1280px) 100vw, 1280px"
             />
 
-            {/* FLOATING CARD 1: TOP-RIGHT "TORQ Diagnostic Engine" */}
-            <div className="hidden md:block absolute top-6 right-6 w-[320px] bg-white/95 backdrop-blur-md rounded-[16px] p-5 shadow-[0_12px_36px_rgba(26,26,26,0.12)] border border-white/80 z-20">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FAF4F2] text-[#E5402C] flex items-center justify-center shrink-0 border border-[#F6C9BE]/50">
-                  <Activity className="w-4 h-4" />
+            {/* IN-SCENE HUD / TELEMETRY OVERLAY STRIP (Not a second website header, but a slim dark glass readout) */}
+            <div className="absolute top-5 left-5 z-20">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/45 backdrop-blur-md border border-white/10 text-[11px] font-mono text-white/90 shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Bay 01 · J1939 CAN Bus · 250 kbps · Telemetry: Live</span>
+              </div>
+            </div>
+
+            {/* FLOATING CARD 1: TOP-RIGHT TABULAR DATA READOUT (De-genericized, tabular, monospace, no stock icon) */}
+            <div className="hidden md:block absolute top-5 right-5 w-[310px] bg-white/95 backdrop-blur-md rounded-[18px] p-5 shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-black/[0.06] z-20">
+              <div className="border-b border-black/[0.06] pb-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#6E6E6E]">
+                    TELEMETRY READOUT
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    ONLINE
+                  </span>
                 </div>
-                <div className="space-y-0.5">
-                  <h4 className="text-[14px] font-semibold text-[#1A1A1A] leading-tight">
-                    TORQ Diagnostic Engine
-                  </h4>
-                  <p className="text-[12px] text-[#6E6E6E] leading-snug">
-                    Live inference — Paccar Fleet Network
-                  </p>
+                <h4 className="text-[15px] font-extrabold text-[#111827] mt-1 tracking-tight">
+                  TORQ Diagnostic Engine
+                </h4>
+              </div>
+
+              {/* Tabular Monospace Metrics */}
+              <div className="py-3 space-y-2.5 text-xs font-mono">
+                <div className="flex items-center justify-between text-[#4B5563]">
+                  <span className="text-[11px] text-[#6E6E6E]">DTC codes indexed</span>
+                  <span className="font-bold text-[#111827] tabular-nums">15,000+</span>
+                </div>
+                <div className="flex items-center justify-between text-[#4B5563] pt-1 border-t border-black/[0.04]">
+                  <span className="text-[11px] text-[#6E6E6E]">Confidence avg</span>
+                  <span className="font-bold text-emerald-600 tabular-nums">87.4%</span>
+                </div>
+                <div className="flex items-center justify-between text-[#4B5563] pt-1 border-t border-black/[0.04]">
+                  <span className="text-[11px] text-[#6E6E6E]">Avg. time-to-cause</span>
+                  <span className="font-bold text-[#111827] tabular-nums">4.2 min</span>
+                </div>
+                <div className="flex items-center justify-between text-[#4B5563] pt-1 border-t border-black/[0.04]">
+                  <span className="text-[11px] text-[#6E6E6E]">Escalation threshold</span>
+                  <span className="font-bold text-[#111827] tabular-nums">&lt; 40.0%</span>
                 </div>
               </div>
 
-              {/* Stats List (4 Rows) */}
-              <div className="mt-4 pt-3 border-t border-[#F6F6F5] space-y-2 text-[12px]">
-                <div className="flex items-center justify-between">
-                  <span className="text-[#6E6E6E]">DTC codes indexed</span>
-                  <span className="font-semibold text-[#1A1A1A] font-mono">15,000+</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#6E6E6E]">Diagnosis confidence avg</span>
-                  <span className="font-semibold text-emerald-600 font-mono">87%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#6E6E6E]">Avg. time-to-cause</span>
-                  <span className="font-semibold text-[#1A1A1A] font-mono">4.2 min</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#6E6E6E]">Escalation rate</span>
-                  <span className="font-semibold text-emerald-600 font-mono">&lt; 12%</span>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-[#F6F6F5] flex justify-between items-center">
+              <div className="pt-2.5 border-t border-black/[0.06] flex justify-between items-center text-xs">
                 <a
                   href="#capabilities"
-                  className="text-[12px] font-semibold text-[#E5402C] hover:text-[#CF3722] flex items-center gap-1 group"
+                  className="font-bold text-[#E5402C] hover:text-[#CF3722] flex items-center gap-1 group text-xs"
                 >
-                  <span>How TORQ reasons</span>
+                  <span>View Bayesian model</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </a>
               </div>
             </div>
 
-            {/* FLOATING CARD 2: BOTTOM-LEFT "Diagnose faster with TORQ" */}
-            <div className="hidden sm:block absolute bottom-6 left-6 max-w-[380px] bg-white/95 backdrop-blur-md rounded-[16px] p-6 shadow-[0_12px_36px_rgba(26,26,26,0.12)] border border-white/80 z-20 space-y-4">
+            {/* FLOATING CARD 2: BOTTOM-LEFT "Diagnose faster with TORQ" (Product-First, No Duplicate Footer Caption) */}
+            <div className="hidden sm:block absolute bottom-5 left-5 max-w-[370px] bg-white/95 backdrop-blur-md rounded-[18px] p-6 shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-black/[0.06] z-20 space-y-4">
               <div className="space-y-1.5">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#9A9A9A]">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#E5402C]" />
-                  AI-ASSISTED DIAGNOSTICS
+                  Bayesian Root Cause Reasoning
                 </span>
-                <h3 className="text-[18px] font-medium tracking-tight text-[#1A1A1A] leading-snug">
+                <h3 className="text-lg font-extrabold tracking-tight text-[#111827] leading-snug">
                   Diagnose faster with TORQ
                 </h3>
-                <p className="text-[13px] text-[#6E6E6E] leading-relaxed">
-                  Bayesian reasoning over DTC codes and symptoms, backed by a RAG knowledge base — TORQ narrows down root cause and tells you the next test to run.
+                <p className="text-xs sm:text-[13px] text-[#4B5563] leading-relaxed font-normal">
+                  Inference over DTC codes and driver symptoms, backed by a verified RAG knowledge base. TORQ narrows down root causes and prescribes the Next-Best-Test.
                 </p>
               </div>
 
@@ -178,49 +127,23 @@ export const HeroSection1: React.FC = () => {
                 </a>
               </div>
 
-              {/* Diagnostic Icons Row & Attribution */}
-              <div className="pt-2 border-t border-[#F6F6F5] flex items-center justify-between">
+              {/* Functional Diagnostic Line Icons (Consistent 1.5px stroke, no mix-and-match) */}
+              <div className="pt-3 border-t border-black/[0.05] flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   {[Wrench, Cpu, Gauge, ShieldCheck, FileCheck].map((Icon, idx) => (
                     <div
                       key={idx}
-                      className="w-7 h-7 rounded-full border border-[#F6C9BE] text-[#E5402C] bg-white flex items-center justify-center shadow-xs"
-                      title="TORQ Diagnostic Engine Modular Component"
+                      className="w-7 h-7 rounded-lg border border-[#F6C9BE] text-[#E5402C] bg-red-50/50 flex items-center justify-center"
+                      title="TORQ Diagnostic Module"
                     >
-                      <Icon className="w-3.5 h-3.5 stroke-[1.75]" />
+                      <Icon className="w-3.5 h-3.5 stroke-[1.5]" />
                     </div>
                   ))}
                 </div>
-                <span className="text-[11px] font-medium text-[#9A9A9A]">
-                  Built for Paccar India Hackathon
+                <span className="text-[11px] font-mono text-[#6B7280]">
+                  J1939 Verified
                 </span>
               </div>
-            </div>
-
-            {/* FLOATING HOTSPOT MARKER (+) MID-SCENE */}
-            <div className="absolute top-[48%] left-[48%] z-20">
-              <button
-                type="button"
-                onClick={() => setActiveHotspot(!activeHotspot)}
-                className="relative group w-8 h-8 rounded-full bg-[#E5402C] text-white flex items-center justify-center shadow-lg hover:bg-[#CF3722] hover:scale-105 transition-all"
-                title="Live Port Telemetry"
-              >
-                <span className="absolute inset-0 rounded-full bg-[#E5402C] animate-ping opacity-30" />
-                <Plus className={`w-4 h-4 transition-transform duration-200 ${activeHotspot ? "rotate-45" : ""}`} />
-              </button>
-
-              {/* Interactive Telemetry Tooltip */}
-              {activeHotspot && (
-                <div className="absolute left-10 top-0 w-64 bg-white rounded-xl p-3.5 shadow-xl border border-[#F6F6F5] text-xs z-30 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="font-semibold text-[#1A1A1A] flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    J1939 CAN Port: Active Stream
-                  </div>
-                  <p className="text-[#6E6E6E] text-[11px] mt-1 leading-snug">
-                    Telemetry: SPN 94 / FMI 1 (Fuel Delivery Pressure). Live Bayesian prior initialized at 62% confidence.
-                  </p>
-                </div>
-              )}
             </div>
 
           </div>
@@ -228,24 +151,24 @@ export const HeroSection1: React.FC = () => {
         </div>
 
         {/* MOBILE FALLBACK STACKED CARDS */}
-        <div className="mt-6 md:hidden space-y-4">
-          <div className="bg-white rounded-[16px] p-5 shadow-sm border border-white space-y-3">
-            <h4 className="text-[16px] font-semibold text-[#1A1A1A]">
+        <div className="mt-5 md:hidden space-y-4">
+          <div className="bg-white rounded-[18px] p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-black/[0.06] space-y-3">
+            <h4 className="text-base font-extrabold text-[#111827]">
               TORQ Diagnostic Engine
             </h4>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="p-2 bg-[#F6F6F5] rounded-lg">
-                <span className="text-[#6E6E6E] block text-[10px]">DTC Database</span>
-                <span className="font-bold text-[#1A1A1A]">15,000+ Codes</span>
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+              <div className="p-3 bg-[#F8FAFC] rounded-xl border border-black/[0.04]">
+                <span className="text-[#6E6E6E] block text-[10px] uppercase">DTC Database</span>
+                <span className="font-bold text-[#111827] text-sm mt-0.5 block">15,000+ Codes</span>
               </div>
-              <div className="p-2 bg-[#F6F6F5] rounded-lg">
-                <span className="text-[#6E6E6E] block text-[10px]">Avg Confidence</span>
-                <span className="font-bold text-emerald-600">87%</span>
+              <div className="p-3 bg-[#F8FAFC] rounded-xl border border-black/[0.04]">
+                <span className="text-[#6E6E6E] block text-[10px] uppercase">Avg Confidence</span>
+                <span className="font-bold text-emerald-600 text-sm mt-0.5 block">87.4%</span>
               </div>
             </div>
-            <div className="flex gap-2 pt-1">
-              <Link href="/diagnostics/new" className="w-full">
-                <PillButton variant="solid" size="sm" className="w-full">
+            <div className="pt-2">
+              <Link href="/diagnostics/new" className="w-full block">
+                <PillButton variant="solid" size="sm" className="w-full justify-center">
                   Start a diagnosis
                 </PillButton>
               </Link>

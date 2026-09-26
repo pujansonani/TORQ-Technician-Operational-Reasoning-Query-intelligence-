@@ -26,7 +26,7 @@ export const TorqNavbar: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-4 z-50 w-full px-4 sm:px-6 pointer-events-none transition-all duration-300">
+    <header className="sticky top-0 z-50 w-full pt-3 px-4 sm:px-6 pointer-events-none transition-all duration-300">
       {/* FLOATING CURVED NAVBAR CONTAINER */}
       <div
         className={`max-w-[1240px] mx-auto pointer-events-auto rounded-full bg-white/95 backdrop-blur-md border border-black/[0.08] px-5 sm:px-7 h-[68px] flex items-center justify-between transition-all duration-300 ${
