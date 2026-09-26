@@ -5,6 +5,9 @@ Report API routes — export diagnostic session reports.
 from __future__ import annotations
 
 import uuid
+import logging
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import PlainTextResponse
@@ -106,4 +109,5 @@ async def get_report(
     )
 
     markdown = report_gen.generate_markdown(report_data)
+    logger.info("📄 [REPORT GENERATED] Session: %s | Truck: %s %s | Root Cause: %s", session.id, truck.brand, truck.model, session.root_cause or "In Progress")
     return PlainTextResponse(content=markdown, media_type="text/markdown")

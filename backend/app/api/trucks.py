@@ -12,6 +12,10 @@ from app.database import get_db
 from app.models.truck import Truck
 from app.schemas.truck import TruckOut, TruckBrief
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/api/trucks", tags=["trucks"])
 
 
@@ -20,6 +24,7 @@ async def list_trucks(db: AsyncSession = Depends(get_db)):
     """List all trucks in the fleet."""
     result = await db.execute(select(Truck).order_by(Truck.brand, Truck.model))
     trucks = result.scalars().all()
+    logger.info("🚛 [FLEET ACCESSED] Returned %d vehicles from database", len(trucks))
     return trucks
 
 

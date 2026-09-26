@@ -198,6 +198,25 @@ async def start_diagnosis(
     top_cause_id, top_prob = engine.get_top_cause(priors)
     cost_est = await cost_estimator.estimate(db, top_cause_id, dtc_entry, truck_obj.model)
 
+    # ── Console logging for terminal visibility ──
+    logger.info("=" * 72)
+    logger.info("🔍 [TORQ DIAGNOSIS STARTED]")
+    logger.info("Vehicle:     %s %s (%s) — VIN: ...%s", truck_obj.brand, truck_obj.model, truck_obj.year, truck_obj.vin[-6:])
+    logger.info("Fault Code:  %s — %s (Severity: %s/5)", primary_dtc, dtc_entry['description'], dtc_entry['severity'])
+    logger.info("Subsystem:   %s", dtc_entry['subsystem'])
+    symptom_preview = request.symptom_text[:100] + ("..." if len(request.symptom_text) > 100 else "")
+    logger.info("Symptom:     \"%s\"", symptom_preview)
+    logger.info("RAG Context: %d procedure chunks retrieved from ChromaDB", len(citations))
+    logger.info("Initial Bayesian Priors:")
+    for c in candidates:
+        logger.info("  • %-36s : %5.1f%%", c.name, c.probability * 100)
+    if recommended_test:
+        logger.info("Recommended Next Test: [%s]", recommended_test.test_id)
+        logger.info("  → %s", recommended_test.description)
+    logger.info("Initial Confidence Score: %.1f%% | Status: Active", confidence)
+    logger.info("Session ID:  %s", session.id)
+    logger.info("=" * 72)
+
     return DiagnosisResponse(
         session_id=session.id,
         dtc_codes=request.dtc_codes,
@@ -316,22 +335,20 @@ async def submit_test_result(
     )
     db.add(update_event)
 
-    # Select next test (if not complete)
-    recommended_test = None
-    if not diagnosis_complete and not should_esc:
-        recommended_test = engine.select_next_test(
-            dtc_entry, updated_posteriors, completed_test_ids,
+    # Select next test as long as unperformed tests exist
+    recommended_test = engine.select_next_test(
+        dtc_entry, updated_posteriors, completed_test_ids,
+    )
+    if recommended_test:
+        test_event = SessionEvent(
+            session_id=session.id,
+            type="test_recommended",
+            payload={
+                "test_id": recommended_test.test_id,
+                "description": recommended_test.description,
+            },
         )
-        if recommended_test:
-            test_event = SessionEvent(
-                session_id=session.id,
-                type="test_recommended",
-                payload={
-                    "test_id": recommended_test.test_id,
-                    "description": recommended_test.description,
-                },
-            )
-            db.add(test_event)
+        db.add(test_event)
 
     await db.commit()
 
@@ -343,9 +360,31 @@ async def submit_test_result(
     top_cause_id, _ = engine.get_top_cause(updated_posteriors)
     cost_est = await cost_estimator.estimate(db, top_cause_id, dtc_entry)
 
-    # RAG citations
-    rag_service = get_rag_service()
-    _, citations = rag_service.retrieve(session.symptom_text, session.dtc_codes)
+    # ── Console logging for terminal visibility ──
+    logger.info("=" * 72)
+    logger.info("🧪 [TORQ TEST RESULT SUBMITTED]")
+    logger.info("Session ID:    %s", session.id)
+    logger.info("Test Executed: %s", request.test_id)
+    notes_str = f" (Notes: {request.notes})" if request.notes else ""
+    logger.info("Result Given:  %s%s", request.result.upper(), notes_str)
+    logger.info("Bayesian Probability Update:")
+    cause_map = {c["id"]: c["name"] for c in dtc_entry.get("possible_causes", [])}
+    for cid, new_p in sorted(updated_posteriors.items(), key=lambda x: x[1], reverse=True):
+        old_p = current_posteriors.get(cid, 0.0)
+        direction = "▲" if new_p > old_p + 0.01 else "▼" if new_p < old_p - 0.01 else "•"
+        cause_name = cause_map.get(cid, cid)
+        logger.info("  %s %-34s : %5.1f%% → %5.1f%%", direction, cause_name, old_p * 100, new_p * 100)
+    logger.info("Updated Confidence Score: %.1f%% (Threshold: 40.0%%)", confidence)
+    if diagnosis_complete:
+        logger.info("🎯 [ROOT CAUSE CONFIRMED]: %s", root_cause)
+        logger.info("Estimated Total Cost:    %s", f"${cost_est.total:,.2f}" if cost_est else "N/A")
+        logger.info("Status:                  RESOLVED (Diagnosis Complete)")
+    elif recommended_test:
+        logger.info("Next Recommended Test:   [%s]", recommended_test.test_id)
+        logger.info("  → %s", recommended_test.description)
+    else:
+        logger.info("ℹ️ All available diagnostic tests completed.")
+    logger.info("=" * 72)
 
     return DiagnosisResponse(
         session_id=session.id,
@@ -419,6 +458,8 @@ async def get_session(
     if dtc_entry:
         rag_service = get_rag_service()
         _, citations = rag_service.retrieve(session.symptom_text, session.dtc_codes)
+
+    logger.info("📋 [TORQ SESSION LOADED] %s | Status: %s | Completed Tests: %d", session.id, session.status, len(completed_tests))
 
     return SessionState(
         session_id=session.id,

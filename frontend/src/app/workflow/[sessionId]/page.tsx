@@ -361,7 +361,7 @@ export default function WorkflowPage() {
           )}
 
           {/* Next Test Card */}
-          {session.recommended_test && !isResolved && !isEscalated && (
+          {session.recommended_test && (
             <div className="torq-card border-primary/30 shadow-glow">
               <div className="torq-card-header bg-primary-50/50">
                 <div className="flex items-center gap-2">
@@ -372,7 +372,7 @@ export default function WorkflowPage() {
                   </div>
                   <div>
                     <h2 className="font-semibold text-primary">
-                      Recommended Next Test
+                      {isResolved ? "Additional Diagnostic Test Available" : "Recommended Next Test"}
                     </h2>
                     <p className="text-xs text-primary-300">
                       Step {session.completed_tests.length + 1}
@@ -466,6 +466,21 @@ export default function WorkflowPage() {
                   </button>
                 </div>
               </div>
+            </div>
+          )}
+
+          {!session.recommended_test && session.completed_tests.length > 0 && (
+            <div className="torq-card border-success/30 bg-green-50/20 p-6 text-center">
+              <h3 className="font-semibold text-dark mb-1">All Diagnostic Tests Completed</h3>
+              <p className="text-sm text-surface-500 mb-4">
+                All diagnostic procedures defined for this DTC have been performed.
+              </p>
+              <a
+                href={`/report/${sessionId}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-medium text-sm hover:bg-primary-700 transition-colors"
+              >
+                View Full Service Report →
+              </a>
             </div>
           )}
 
