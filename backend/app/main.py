@@ -66,7 +66,11 @@ def create_app() -> FastAPI:
     )
 
     # CORS
-    origins = [o.strip() for o in settings.cors_origins.split(",")]
+    origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
+    for default_origin in ["http://localhost:3000", "http://127.0.0.1:3000"]:
+        if default_origin not in origins:
+            origins.append(default_origin)
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,

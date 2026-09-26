@@ -53,7 +53,7 @@ class Settings(BaseSettings):
 
     # ── Embeddings ────────────────────────────────────────────────────
     embedding_model: str = "all-MiniLM-L6-v2"
-    chroma_persist_dir: str = "./chroma_data"
+    chroma_persist_dir: str = "./chroma_db"
 
     # ── RAG settings ──────────────────────────────────────────────────
     rag_top_k: int = 5

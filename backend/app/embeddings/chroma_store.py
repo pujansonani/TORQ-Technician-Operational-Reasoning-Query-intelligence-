@@ -23,7 +23,7 @@ COLLECTION_NAME = "dtc_procedures"
 class ChromaStore:
     """Manages ChromaDB collections for diagnostic procedure retrieval."""
 
-    def __init__(self, persist_dir: str = "./chroma_data"):
+    def __init__(self, persist_dir: str = "./chroma_db"):
         logger.info("Initializing ChromaDB at '%s'...", persist_dir)
         self._client = chromadb.PersistentClient(path=persist_dir)
         self._embedding_service = get_embedding_service()
