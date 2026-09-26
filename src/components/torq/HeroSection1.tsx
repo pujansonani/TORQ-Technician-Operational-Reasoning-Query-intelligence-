@@ -8,7 +8,7 @@ import { PillButton } from "./PillButton";
 
 export const HeroSection1: React.FC = () => {
   return (
-    <section className="relative w-full bg-[#DCE7DE] py-8 md:py-12 overflow-hidden">
+    <section className="relative w-full bg-[#DCE7DE] pt-24 sm:pt-28 pb-8 md:pb-12 overflow-hidden before:content-[''] before:absolute before:inset-x-0 before:bottom-full before:h-[300px] before:bg-[#DCE7DE]">
       
       {/* Faint Abstract Line Background */}
       <div className="absolute inset-0 pointer-events-none opacity-30">

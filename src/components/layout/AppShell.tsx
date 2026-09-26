@@ -13,7 +13,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       <TorqNavbar />
       
       {/* Apple HIG Content Container */}
-      <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 py-8 md:py-12">
+      <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 pt-24 sm:pt-28 pb-8 md:pb-12">
         {children}
       </main>
 

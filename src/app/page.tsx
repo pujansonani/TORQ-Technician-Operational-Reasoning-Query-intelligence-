@@ -22,9 +22,7 @@ export default function TorqLandingPage() {
         <TorqNavbar />
 
         {/* 2. HERO SECTION 1 — Diagnostic Bay Isometric Hero with Live Telemetry Overlays */}
-        <div className="-mt-20 pt-20">
-          <HeroSection1 />
-        </div>
+        <HeroSection1 />
 
         {/* 3. HERO SECTION 2 — Editorial Split Hero: "Your fleet's downtime. Our diagnosis. Welcome to TORQ." */}
         <HeroSection2 />
