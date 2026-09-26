@@ -14,7 +14,11 @@ import {
   ChevronRight,
   ShieldCheck,
   Sparkles,
-  TrendingUp
+  TrendingUp,
+  Truck,
+  Layers,
+  Cpu,
+  Info
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { fetchSession, submitTestResult, type SessionState } from "@/lib/api";
@@ -92,7 +96,7 @@ export default function DiagnosisResultPage() {
 
   return (
     <AppShell>
-      <div className="space-y-10">
+      <div className="space-y-8">
 
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-black/[0.06]">
@@ -120,7 +124,7 @@ export default function DiagnosisResultPage() {
             <div className="flex flex-wrap items-center gap-2 text-xs text-[#4B5563] pt-1 font-medium">
               <span className="font-mono font-bold text-[#E5402C]">{session.dtc_codes.join(", ")}</span>
               <span>•</span>
-              <span>{session.symptom_text.slice(0, 80)}…</span>
+              <span className="line-clamp-1 max-w-xl">{session.symptom_text}</span>
             </div>
           </div>
 
@@ -139,6 +143,50 @@ export default function DiagnosisResultPage() {
             </Link>
           </div>
         </div>
+
+        {/* VEHICLE IDENTIFICATION & OPERATIONAL PROFILE BAR */}
+        {session.truck_info && (
+          <div className="p-5 sm:p-6 rounded-[22px] bg-gradient-to-r from-gray-50 via-white to-gray-50/50 border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-white border border-black/[0.1] shadow-sm flex items-center justify-center text-[#E5402C] shrink-0">
+                <Truck className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h2 className="text-base sm:text-lg font-extrabold text-[#111827]">
+                    {session.truck_info.brand} {session.truck_info.model} ({session.truck_info.year})
+                  </h2>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-white text-[#111827] border border-black/[0.1] shadow-2xs">
+                    {session.truck_info.engine}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#6B7280] mt-1 font-medium">
+                  <span>VIN: <span className="font-mono font-semibold text-[#111827]">{session.truck_info.vin}</span></span>
+                  <span>•</span>
+                  <span>Odometer: <span className="font-mono font-semibold text-[#111827]">{session.truck_info.mileage_km.toLocaleString()} km</span></span>
+                  <span>•</span>
+                  <span className={`font-semibold ${session.truck_info.mileage_km > 250000 ? "text-amber-800" : session.truck_info.mileage_km < 75000 ? "text-blue-800" : "text-emerald-800"}`}>
+                    {session.truck_info.mileage_km > 250000
+                      ? "High-Wear Operating Tier (>250k km) • Mechanical fatigue weighted"
+                      : session.truck_info.mileage_km < 75000
+                      ? "Warranty In-Service Tier (<75k km) • Harness & sensors weighted"
+                      : "Standard Fleet Operational Tier"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+              <div className="text-right hidden sm:block">
+                <div className="text-[10px] font-mono uppercase text-[#6B7280]">Chassis Platform</div>
+                <div className="text-xs font-bold text-[#111827]">PACCAR Heavy Duty</div>
+              </div>
+              <span className="px-3.5 py-1.5 rounded-full text-xs font-mono font-extrabold bg-[#111827] text-white">
+                {session.dtc_codes[0]}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* ROOT CAUSE CONFIRMED BANNER */}
         {session.root_cause && (
@@ -163,12 +211,136 @@ export default function DiagnosisResultPage() {
           </div>
         )}
 
+        {/* AI COPILOT DIAGNOSTIC SYNTHESIS (TECHNICIAN POV FROM GROQ LLM) */}
+        {session.llm_summary && (() => {
+          let summaryText = session.llm_summary;
+          let causeAnalysis: Array<{
+            cause_id?: string;
+            assessment?: string;
+            supporting_evidence?: string[];
+            contradicting_evidence?: string[];
+          }> = [];
+
+          try {
+            const parsed = JSON.parse(session.llm_summary);
+            if (parsed && typeof parsed === "object") {
+              summaryText = parsed.summary || "";
+              causeAnalysis = Array.isArray(parsed.cause_analysis) ? parsed.cause_analysis : [];
+            }
+          } catch {
+            const match = session.llm_summary.match(/\{[\s\S]*\}/);
+            if (match) {
+              try {
+                const parsed = JSON.parse(match[0]);
+                if (parsed && typeof parsed === "object") {
+                  summaryText = parsed.summary || "";
+                  causeAnalysis = Array.isArray(parsed.cause_analysis) ? parsed.cause_analysis : [];
+                }
+              } catch {}
+            }
+          }
+
+          return (
+            <div className="p-6 sm:p-7 rounded-[24px] bg-[#0E1525] text-white shadow-xl relative overflow-hidden border border-slate-800 space-y-6">
+              <div className="absolute top-0 right-0 w-80 h-80 bg-[#E5402C]/10 rounded-full blur-3xl pointer-events-none" />
+              
+              <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#E5402C] flex items-center justify-center text-white shadow-md">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold tracking-tight text-white flex items-center gap-2">
+                      <span>AI Copilot Diagnostic Synthesis</span>
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-emerald-400 border border-emerald-400/20">
+                        Technician Field Rationale
+                      </span>
+                    </h3>
+                    <p className="text-xs text-gray-400">
+                      Reasoning synthesized from live PACCAR telemetry, DTC fault signatures, and Bayesian candidate priors
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full text-[11px] font-mono font-semibold bg-white/10 text-gray-200 border border-white/10">
+                    TORQ-Lock™ Guardrail
+                  </span>
+                </div>
+              </div>
+
+              {/* High-level Field Narrative */}
+              {summaryText && (
+                <div className="relative z-10 text-xs sm:text-sm text-gray-200 leading-relaxed font-sans bg-black/40 p-4 rounded-xl border border-white/5 font-normal">
+                  <span className="font-bold text-[#E5402C] block text-xs uppercase tracking-wider mb-1">
+                    Technician Observation & Summary:
+                  </span>
+                  {summaryText}
+                </div>
+              )}
+
+              {/* Detailed Multi-Cause Evidence Analysis */}
+              {causeAnalysis.length > 0 && (
+                <div className="relative z-10 space-y-3 pt-1">
+                  <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-gray-400">
+                    Candidate Hypothesis Differential Breakdown
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {causeAnalysis.map((item, idx) => {
+                      const isHigh = (item.assessment || "").toLowerCase().includes("highly");
+                      const isPossible = (item.assessment || "").toLowerCase().includes("possible");
+                      return (
+                        <div
+                          key={idx}
+                          className="p-4 rounded-xl bg-slate-900/80 border border-white/10 flex flex-col justify-between space-y-3"
+                        >
+                          <div>
+                            <div className="flex items-start justify-between gap-2 mb-1.5">
+                              <span className="text-xs font-bold text-white tracking-wide">
+                                {item.cause_id || `Candidate ${idx + 1}`}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
+                                isHigh
+                                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                  : isPossible
+                                  ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                                  : "bg-gray-700/50 text-gray-400 border border-gray-600/30"
+                              }`}>
+                                {item.assessment?.split("–")[0]?.split("-")[0]?.trim() || "Evaluated"}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-gray-300 leading-snug">
+                              {item.assessment}
+                            </p>
+                          </div>
+
+                          {item.supporting_evidence && item.supporting_evidence.length > 0 && (
+                            <div className="pt-2 border-t border-white/5 space-y-1">
+                              <span className="text-[10px] font-mono text-emerald-400 block font-semibold uppercase">
+                                Supporting Field Evidence:
+                              </span>
+                              <ul className="text-[11px] text-gray-300 space-y-0.5 pl-3 list-disc marker:text-emerald-400">
+                                {item.supporting_evidence.map((ev, eIdx) => (
+                                  <li key={eIdx}>{ev}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* TOP BANNER: LEADING HYPOTHESIS */}
         {topCandidate && (
           <div className="p-6 rounded-[24px] bg-gradient-to-r from-red-50/60 via-white to-red-50/30 border border-[#F6C9BE] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-[0_2px_12px_rgba(229,64,44,0.06)]">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-full bg-[#E5402C] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
-                <Sparkles className="w-5 h-5" />
+                <TrendingUp className="w-5 h-5" />
               </div>
               <div>
                 <div className="text-xs font-extrabold uppercase tracking-wider text-[#E5402C]">
@@ -186,8 +358,8 @@ export default function DiagnosisResultPage() {
               </div>
             </div>
             <div className="shrink-0 text-right">
-              <div className="text-2xl font-extrabold font-mono text-[#E5402C]">{confidencePct}%</div>
-              <div className="text-xs text-[#6B7280]">overall confidence</div>
+              <div className="text-3xl font-extrabold font-mono text-[#E5402C]">{confidencePct}%</div>
+              <div className="text-xs text-[#6B7280]">Bayesian confidence</div>
             </div>
           </div>
         )}
@@ -430,24 +602,70 @@ export default function DiagnosisResultPage() {
             {/* COST ESTIMATE */}
             {session.cost_estimate && (
               <div className="p-7 bg-white rounded-[24px] border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
-                <div className="border-b border-black/[0.06] pb-4">
-                  <h3 className="text-lg font-extrabold tracking-tight text-[#111827]">Repair Cost Estimate</h3>
-                  <p className="text-xs text-[#6B7280]">Based on top candidate cause</p>
+                <div className="border-b border-black/[0.06] pb-4 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-extrabold tracking-tight text-[#111827]">Repair Cost Estimate</h3>
+                    <p className="text-xs text-[#6B7280]">Model-tailored PACCAR OEM estimate</p>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-[#E5402C] uppercase tracking-wider">
+                    PARTS & LABOR
+                  </span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+                    Required OEM Components
+                  </div>
                   {session.cost_estimate.parts.map((p, i) => (
-                    <div key={i} className="flex justify-between text-sm">
-                      <span className="text-[#374151] font-medium">{p.description}</span>
-                      <span className="font-mono font-bold text-[#111827]">₹{p.price.toLocaleString()}</span>
+                    <div key={i} className="flex justify-between items-center text-sm py-1 border-b border-black/[0.03]">
+                      <div>
+                        <span className="text-[#111827] font-semibold block">{p.description}</span>
+                        <span className="text-[11px] font-mono text-[#6B7280]">Part #{p.part_number} • Qty {p.quantity}</span>
+                      </div>
+                      <span className="font-mono font-bold text-[#111827]">₹{(p.line_total || p.price).toLocaleString()}</span>
                     </div>
                   ))}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#374151] font-medium">Labour ({session.cost_estimate.labor_hours}h × ₹{session.cost_estimate.labor_rate_per_hour}/hr)</span>
-                    <span className="font-mono font-bold text-[#111827]">₹{(session.cost_estimate.labor_hours * session.cost_estimate.labor_rate_per_hour).toLocaleString()}</span>
+
+                  <div className="pt-2">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280] mb-1">
+                      Technician Labor & Packaging
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <div>
+                        <span className="text-[#374151] font-medium block">
+                          Labor ({session.cost_estimate.labor_hours} hrs @ ₹{session.cost_estimate.labor_rate_per_hour}/hr)
+                        </span>
+                        {session.truck_info?.model && (
+                          <span className="text-[11px] text-[#6B7280] block">
+                            Chassis access factor: {session.truck_info.model.toLowerCase().includes("t880") ? "Vocational armor (+25%)" : session.truck_info.model.toLowerCase().includes("389") ? "Open conventional (+5%)" : "Aero cowlings (+20%)"}
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-mono font-bold text-[#111827]">
+                        ₹{Math.round(session.cost_estimate.labor_hours * session.cost_estimate.labor_rate_per_hour).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
-                  <div className="pt-3 mt-3 border-t border-black/[0.06] flex justify-between">
-                    <span className="text-base font-extrabold text-[#111827]">Total Estimate</span>
-                    <span className="text-xl font-extrabold font-mono text-[#E5402C]">₹{session.cost_estimate.total.toLocaleString()}</span>
+
+                  {session.cost_estimate.consumables > 0 && (
+                    <div className="flex justify-between items-center text-sm py-1 border-t border-black/[0.04]">
+                      <div>
+                        <span className="text-[#374151] font-medium block">Consumables & HazMat</span>
+                        <span className="text-[11px] text-[#6B7280]">O-rings, sealants, solvent & environmental fee</span>
+                      </div>
+                      <span className="font-mono font-bold text-[#111827]">
+                        ₹{Math.round(session.cost_estimate.consumables).toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="pt-3 mt-3 border-t-2 border-black/[0.08] flex justify-between items-baseline">
+                    <div>
+                      <span className="text-base font-extrabold text-[#111827]">Total Estimate</span>
+                      <span className="text-[11px] text-[#6B7280] block">Excl. applicable GST</span>
+                    </div>
+                    <span className="text-2xl font-extrabold font-mono text-[#E5402C]">
+                      ₹{Math.round(session.cost_estimate.total).toLocaleString()}
+                    </span>
                   </div>
                 </div>
               </div>

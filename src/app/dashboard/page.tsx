@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
@@ -23,34 +23,56 @@ import { Badge } from "@/components/ui/Badge";
 import { RECENT_DIAGNOSTICS_DATA, FLEET_STATISTICS } from "@/lib/mockData";
 import { useTorqStore } from "@/lib/store";
 import { formatCurrencyINR } from "@/lib/utils";
-import { fetchTrucks, startDiagnosis } from "@/lib/api";
+import { fetchTrucks, startDiagnosis, DTC_SUBSYSTEMS, type Truck } from "@/lib/api";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { activeSession, createNewSession } = useTorqStore();
 
-  // Quick diagnosis state
-  const [truckId, setTruckId] = useState("KW-704");
-  const [model, setModel] = useState("Kenworth T680 Next Gen");
-  const [engine, setEngine] = useState("PACCAR MX-13 455 HP");
-  const [symptom, setSymptom] = useState("Engine loses power under load and hesitates during acceleration above 1,400 RPM.");
-  const [dtc, setDtc] = useState("SPN 94 / FMI 1");
+  const [trucksList, setTrucksList] = useState<Truck[]>([]);
+  const [selectedTruckId, setSelectedTruckId] = useState<string>("");
+  const [symptom, setSymptom] = useState("Engine coolant temperature rising excessively above 105°C under uphill haul load with fan cycling continuously.");
+  const [dtc, setDtc] = useState("SPN 110 / FMI 0");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  useEffect(() => {
+    fetchTrucks()
+      .then((data) => {
+        setTrucksList(data);
+        if (data.length > 0) {
+          setSelectedTruckId(data[0].id);
+        }
+      })
+      .catch((err) => console.warn("Could not fetch trucks list:", err));
+  }, []);
+
+  const selectedTruck = trucksList.find(t => t.id === selectedTruckId) || trucksList[0];
+
+  // Auto-detect subsystem if symptom text changes
+  const handleSymptomChange = (text: string) => {
+    setSymptom(text);
+    const lower = text.toLowerCase();
+    const matched = DTC_SUBSYSTEMS.find(sub => 
+      sub.keywords.some(kw => lower.includes(kw))
+    );
+    if (matched) {
+      setDtc(`SPN ${matched.spn} / FMI ${matched.fmi}`);
+    }
+  };
+
+  const handleApplyPreset = (presetSymptom: string, presetCode: string) => {
+    setSymptom(presetSymptom);
+    setDtc(presetCode);
+  };
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAnalyzing(true);
     try {
-      const trucks = await fetchTrucks();
-      const matchedTruck = trucks.find(t => 
-        t.id === truckId || 
-        `${t.brand} ${t.model}`.toLowerCase().includes(model.toLowerCase())
-      ) || trucks[0];
-
-      if (matchedTruck) {
-        // Extract SPN / FMI if present, e.g. "SPN 94 / FMI 1" -> "SPN 94 / FMI 1" or first code
+      const activeTruckId = selectedTruck?.id || (await fetchTrucks())[0]?.id;
+      if (activeTruckId) {
         const resp = await startDiagnosis({
-          truck_id: matchedTruck.id,
+          truck_id: activeTruckId,
           symptom_text: symptom,
           dtc_codes: [dtc.trim()],
         });
@@ -58,16 +80,10 @@ export default function DashboardPage() {
         return;
       }
     } catch (err) {
-      console.warn("Backend startDiagnosis fallback:", err);
+      console.warn("Backend startDiagnosis error:", err);
+    } finally {
+      setIsAnalyzing(false);
     }
-    createNewSession({
-      truckId,
-      truckModel: model,
-      engine,
-      symptomText: symptom,
-      dtc,
-    });
-    router.push(`/diagnostics/${activeSession.id}`);
   };
 
   return (
@@ -196,48 +212,38 @@ export default function DashboardPage() {
 
             <form onSubmit={handleAnalyze} className="space-y-5 pt-2">
               
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
-                    Truck ID / Unit #
-                  </label>
-                  <input
-                    type="text"
-                    value={truckId}
-                    onChange={(e) => setTruckId(e.target.value)}
-                    className="w-full h-12 px-4 bg-white text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
-                    placeholder="e.g. KW-704"
-                    required
-                  />
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
+                      Select Service Bay Truck (PACCAR Fleet)
+                    </label>
+                    <select
+                      value={selectedTruckId}
+                      onChange={(e) => setSelectedTruckId(e.target.value)}
+                      className="w-full h-12 px-4 bg-white text-[#111827] text-sm font-semibold rounded-xl border border-black/[0.12] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
+                    >
+                      {trucksList.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.brand} {t.model} ({t.year}) — {t.mileage_km.toLocaleString()} km — {t.engine}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
-                    Truck Model
-                  </label>
-                  <input
-                    type="text"
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                    className="w-full h-12 px-4 bg-white text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
-                    placeholder="e.g. Kenworth T680"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
-                    Engine Spec
-                  </label>
-                  <input
-                    type="text"
-                    value={engine}
-                    onChange={(e) => setEngine(e.target.value)}
-                    className="w-full h-12 px-4 bg-white text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
-                    placeholder="e.g. PACCAR MX-13 455 HP"
-                    required
-                  />
-                </div>
+                {selectedTruck && (
+                  <div className="px-4 py-2.5 rounded-xl bg-gray-50 border border-black/[0.06] flex flex-wrap items-center justify-between text-xs text-[#4B5563]">
+                    <div className="flex items-center gap-3">
+                      <span>VIN: <span className="font-mono font-bold text-[#111827]">{selectedTruck.vin}</span></span>
+                      <span>•</span>
+                      <span>Odometer: <span className="font-mono font-bold text-[#111827]">{selectedTruck.mileage_km.toLocaleString()} km</span></span>
+                    </div>
+                    <span className="font-semibold text-emerald-700">
+                      Telemetry Stream Active
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Symptom Input with Voice Icon */}
@@ -259,7 +265,7 @@ export default function DashboardPage() {
                   <textarea
                     rows={2}
                     value={symptom}
-                    onChange={(e) => setSymptom(e.target.value)}
+                    onChange={(e) => handleSymptomChange(e.target.value)}
                     className="w-full p-4 bg-white text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all pr-12 leading-relaxed"
                     placeholder="Describe what the technician or driver is experiencing..."
                     required
@@ -273,10 +279,61 @@ export default function DashboardPage() {
                     <Mic className="w-4 h-4" />
                   </button>
                 </div>
+
+                {/* Technician Quick Preset Chips */}
+                <div className="pt-2">
+                  <span className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider block mb-1.5">
+                    Technician Diagnostic Presets:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleApplyPreset("Engine coolant temperature rising excessively above 105°C under uphill haul load with fan cycling continuously.", "SPN 110 / FMI 0")}
+                      className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 hover:bg-red-50 hover:text-[#E5402C] border border-gray-200 transition-all text-[#374151]"
+                    >
+                      🌡️ Coolant Overheating (SPN 110)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyPreset("Low oil pressure warning lamp illuminated at warm idle. Pressure gauge drops below 1.2 bar.", "SPN 100 / FMI 4")}
+                      className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 hover:bg-red-50 hover:text-[#E5402C] border border-gray-200 transition-all text-[#374151]"
+                    >
+                      🛢️ Oil Pressure Drop (SPN 100)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyPreset("DEF dosing pressure low warning on dash with engine torque derate active and DEF fluid quality warning.", "SPN 520322 / FMI 1")}
+                      className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 hover:bg-red-50 hover:text-[#E5402C] border border-gray-200 transition-all text-[#374151]"
+                    >
+                      💧 DEF Dosing Malfunction (SPN 520322)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyPreset("DPF soot loading alert illuminated. Frequent automatic active regeneration aborted with high differential pressure.", "SPN 3226 / FMI 15")}
+                      className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 hover:bg-red-50 hover:text-[#E5402C] border border-gray-200 transition-all text-[#374151]"
+                    >
+                      💨 DPF Differential Pressure (SPN 3226)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyPreset("Intermittent throttle response and dead pedal feeling when accelerating out of gear shifts.", "SPN 91 / FMI 8")}
+                      className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 hover:bg-red-50 hover:text-[#E5402C] border border-gray-200 transition-all text-[#374151]"
+                    >
+                      ⚡ Throttle Sensor Erratic (SPN 91)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyPreset("Intermittent engine stumble and tachometer needle twitching under sustained 1,500 RPM highway cruise.", "SPN 190 / FMI 2")}
+                      className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 hover:bg-red-50 hover:text-[#E5402C] border border-gray-200 transition-all text-[#374151]"
+                    >
+                      ⚙️ Crank Sensor Jitter (SPN 190)
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Fault Code with OCR Icon and Submit Button */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end pt-1">
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider">
@@ -297,7 +354,7 @@ export default function DashboardPage() {
                       value={dtc}
                       onChange={(e) => setDtc(e.target.value)}
                       className="w-full h-12 px-4 font-mono font-semibold bg-white text-[#111827] text-sm rounded-xl border border-black/[0.12] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all pr-12"
-                      placeholder="e.g. SPN 94 / FMI 1"
+                      placeholder="e.g. SPN 110 / FMI 0"
                       required
                     />
                     <button

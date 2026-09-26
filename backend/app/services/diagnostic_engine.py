@@ -42,19 +42,11 @@ class DiagnosticEngine:
         self,
         dtc_entry: dict[str, Any],
         symptom_text: str,
+        truck_info: dict[str, Any] | None = None,
     ) -> dict[str, float]:
         """
-        Compute prior probability for each candidate cause.
-
-        Formula: prior[cause] = base_rate(cause | dtc) × keyword_match(symptom_text, cause.symptom_keywords)
-        Then normalize into a probability distribution.
-
-        Args:
-            dtc_entry: The dtc_kb row (as dict) for the primary DTC code.
-            symptom_text: The technician's natural-language symptom description.
-
-        Returns:
-            Dict mapping cause_id -> prior probability (sums to 1.0)
+        Compute prior probability for each candidate cause based on technician symptoms
+        and vehicle telemetry context (e.g. mileage, engine hours).
         """
         possible_causes = dtc_entry.get("possible_causes", [])
         if not possible_causes:
@@ -63,30 +55,51 @@ class DiagnosticEngine:
 
         symptom_lower = symptom_text.lower()
         raw_scores: dict[str, float] = {}
+        mileage = float(truck_info.get("mileage_km", 0)) if truck_info else 0.0
 
         for cause in possible_causes:
             cause_id = cause["id"]
-            base_rate = cause.get("base_rate", 1.0 / len(possible_causes))
+            base_rate = float(cause.get("base_rate", 1.0 / len(possible_causes)))
 
-            # Keyword matching: count how many symptom keywords appear in the symptom text
+            # 1. Symptom keyword matching with high sensitivity
             keywords = cause.get("symptom_keywords", [])
-            if keywords:
-                matches = sum(1 for kw in keywords if kw.lower() in symptom_lower)
-                # Scale: 1.0 base + 0.5 per match (so keywords boost but don't dominate)
-                keyword_score = 1.0 + (0.5 * matches)
-            else:
-                keyword_score = 1.0
+            kw_matches = 0
+            for kw in keywords:
+                kw_clean = kw.lower().strip()
+                if kw_clean and kw_clean in symptom_lower:
+                    kw_matches += 1
 
-            raw_scores[cause_id] = base_rate * keyword_score
+            # 2. Match words from cause name and description
+            cause_name = cause.get("name", "").lower()
+            name_words = [w for w in re.findall(r'[a-z]{4,}', cause_name) if w not in ("with", "from", "sensor", "unit")]
+            for w in name_words:
+                if w in symptom_lower:
+                    kw_matches += 1.5
+
+            if kw_matches > 0:
+                keyword_multiplier = 1.0 + (1.6 * kw_matches)
+            else:
+                keyword_multiplier = 0.75  # Penalize if none of the observed symptoms match
+
+            # 3. Vehicle wear factor based on real fleet mileage
+            wear_multiplier = 1.0
+            is_wear_item = any(k in cause_name for k in ("pump", "catalyst", "wear", "cracked", "aging", "substrate"))
+            is_electrical = any(k in cause_name for k in ("wire", "harness", "connector", "pin", "ecm", "sensor"))
+
+            if mileage > 250000 and is_wear_item:
+                wear_multiplier = 1.35
+            elif mileage < 75000 and is_electrical:
+                wear_multiplier = 1.25
+
+            raw_scores[cause_id] = base_rate * keyword_multiplier * wear_multiplier
 
         # Normalize to probability distribution
         total = sum(raw_scores.values())
         if total == 0:
-            # Uniform fallback
             n = len(possible_causes)
             return {c["id"]: 1.0 / n for c in possible_causes}
 
-        return {cid: score / total for cid, score in raw_scores.items()}
+        return {cid: round(score / total, 4) for cid, score in raw_scores.items()}
 
     # ── Step 2: Next-Best-Test Selection ─────────────────────────────
 

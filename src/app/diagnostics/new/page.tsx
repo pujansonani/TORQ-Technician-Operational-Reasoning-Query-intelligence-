@@ -13,7 +13,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { fetchTrucks, startDiagnosis, type TruckBrief } from "@/lib/api";
+import { fetchTrucks, startDiagnosis, DTC_SUBSYSTEMS, type TruckBrief } from "@/lib/api";
 
 export default function NewDiagnosisPage() {
   const router = useRouter();
@@ -22,6 +22,7 @@ export default function NewDiagnosisPage() {
   const [trucks, setTrucks] = useState<TruckBrief[]>([]);
   const [loadingTrucks, setLoadingTrucks] = useState(true);
   const [selectedTruckId, setSelectedTruckId] = useState("");
+  const [selectedSubsystem, setSelectedSubsystem] = useState<string>("SPN-100-FMI-4");
   const [symptom, setSymptom] = useState("");
   const [spn, setSpn] = useState("100");
   const [fmi, setFmi] = useState("4");
@@ -217,9 +218,19 @@ export default function NewDiagnosisPage() {
                 <textarea
                   rows={4}
                   value={symptom}
-                  onChange={(e) => setSymptom(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSymptom(val);
+                    const lower = val.toLowerCase();
+                    const matched = DTC_SUBSYSTEMS.find(sub => sub.keywords.some(k => lower.includes(k)));
+                    if (matched) {
+                      setSelectedSubsystem(matched.code);
+                      setSpn(matched.spn);
+                      setFmi(matched.fmi);
+                    }
+                  }}
                   className="w-full p-4 bg-[#FAFBFB] text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all leading-relaxed"
-                  placeholder="Engine loses power under load and hesitates during acceleration..."
+                  placeholder="Describe observed operating behavior, load conditions, gauge readings, or abnormal noises..."
                 />
               </div>
 
@@ -255,22 +266,30 @@ export default function NewDiagnosisPage() {
               {/* Quick Preset Badges */}
               <div className="space-y-2">
                 <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider block">
-                  Quick Presets From Driver Telemetry:
+                  Quick Presets From Field Diagnostic Telemetry:
                 </span>
-                <div className="flex flex-wrap gap-2 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                   {[
-                    "Hesitation above 1,400 RPM",
-                    "Intermittent stall under highway grade",
-                    "Check engine lamp flashing yellow",
-                    "White exhaust vapor on startup",
+                    { label: "Coolant overheating climbing grade, fan not roaring", spn: "110", fmi: "0", code: "SPN-110-FMI-0" },
+                    { label: "Oil pressure gauge drops to 18 PSI under load", spn: "100", fmi: "4", code: "SPN-100-FMI-4" },
+                    { label: "DEF quality warning, de-rate countdown active", spn: "520322", fmi: "7", code: "SPN-520322-FMI-7" },
+                    { label: "Aborted DPF regen, soot backpressure fault", spn: "3226", fmi: "5", code: "SPN-3226-FMI-5" },
+                    { label: "Dead pedal lag past 50% accelerator travel", spn: "91", fmi: "4", code: "SPN-91-FMI-4" },
+                    { label: "Engine RPM surge and turbo boost drop", spn: "190", fmi: "0", code: "SPN-190-FMI-0" },
                   ].map((preset) => (
                     <button
-                      key={preset}
+                      key={preset.label}
                       type="button"
-                      onClick={() => setSymptom((prev) => (prev ? `${prev} ${preset}` : preset))}
-                      className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-100 hover:bg-red-50 text-[#4B5563] hover:text-[#E5402C] border border-transparent hover:border-[#F6C9BE] transition-all"
+                      onClick={() => {
+                        setSymptom(preset.label);
+                        setSpn(preset.spn);
+                        setFmi(preset.fmi);
+                        setSelectedSubsystem(preset.code);
+                      }}
+                      className="p-3 text-left rounded-xl text-xs font-medium bg-[#FAFBFB] hover:bg-red-50/60 text-[#374151] hover:text-[#E5402C] border border-black/[0.08] hover:border-[#F6C9BE] transition-all flex items-center justify-between group shadow-sm"
                     >
-                      + {preset}
+                      <span>{preset.label}</span>
+                      <span className="font-mono text-[10px] font-bold text-[#6B7280] group-hover:text-[#E5402C] shrink-0 ml-2">SPN {preset.spn}</span>
                     </button>
                   ))}
                 </div>
@@ -301,105 +320,80 @@ export default function NewDiagnosisPage() {
         {/* STEP 3: DTC & FAULT CODES */}
         {step === 3 && (
           <div className="p-8 sm:p-10 bg-white rounded-[24px] border border-black/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.04)] space-y-6">
-            <div className="border-b border-black/[0.06] pb-4">
-              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#111827]">
-                Diagnostic Trouble Codes (DTC)
-              </h2>
-              <p className="text-sm text-[#4B5563] mt-1 font-normal">
-                Enter SPN (Suspect Parameter Number) and FMI (Failure Mode Identifier), or scan the display.
-              </p>
+            <div className="border-b border-black/[0.06] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#111827]">
+                  Select Subsystem & Fault Code (DTC)
+                </h2>
+                <p className="text-sm text-[#4B5563] mt-1 font-normal">
+                  Choose the active PACCAR fault code domain or enter manual SPN/FMI parameters.
+                </p>
+              </div>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-bold bg-gray-100 text-[#111827] border border-gray-200 self-start sm:self-auto">
+                ACTIVE: SPN {spn} / FMI {fmi}
+              </span>
             </div>
 
             <div className="space-y-5">
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setDtcType("SPN")}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                    dtcType === "SPN"
-                      ? "bg-[#111827] text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  SAE J1939 (SPN / FMI)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDtcType("P-Code")}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                    dtcType === "P-Code"
-                      ? "bg-[#111827] text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  Standard OBD (P-Code)
-                </button>
+              {/* 6 SUBSYSTEM SELECTION CARDS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {DTC_SUBSYSTEMS.map((sub) => {
+                  const isSelected = selectedSubsystem === sub.code;
+                  return (
+                    <div
+                      key={sub.code}
+                      onClick={() => {
+                        setSelectedSubsystem(sub.code);
+                        setSpn(sub.spn);
+                        setFmi(sub.fmi);
+                      }}
+                      className={`p-4 rounded-[18px] border cursor-pointer transition-all duration-200 ${
+                        isSelected
+                          ? "border-[#E5402C] ring-2 ring-[#E5402C]/20 bg-gradient-to-br from-red-50/50 to-white shadow-md"
+                          : "border-black/[0.08] bg-[#FAFBFB] hover:border-black/[0.2] hover:bg-white"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <span className="text-xs font-extrabold text-[#111827]">{sub.subsystem}</span>
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                          isSelected ? "bg-[#E5402C] text-white" : "bg-gray-100 text-gray-700"
+                        }`}>
+                          SPN {sub.spn} / FMI {sub.fmi}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#4B5563] leading-relaxed">
+                        {sub.description}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
-                    SPN (Parameter Number)
-                  </label>
-                  <input
-                    type="number"
-                    value={spn}
-                    onChange={(e) => setSpn(e.target.value)}
-                    className="w-full h-12 px-4 font-mono font-semibold bg-[#FAFBFB] text-[#111827] text-sm rounded-xl border border-black/[0.12] focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
-                    placeholder="94"
-                  />
-                  <span className="text-[11px] text-[#6B7280] mt-1.5 block">
-                    SPN 94: Engine Fuel Delivery Pressure
-                  </span>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
-                    FMI (Failure Mode)
-                  </label>
-                  <input
-                    type="number"
-                    value={fmi}
-                    onChange={(e) => setFmi(e.target.value)}
-                    className="w-full h-12 px-4 font-mono font-semibold bg-[#FAFBFB] text-[#111827] text-sm rounded-xl border border-black/[0.12] focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
-                    placeholder="1"
-                  />
-                  <span className="text-[11px] text-[#6B7280] mt-1.5 block">
-                    FMI 1: Data Valid But Below Normal Operating Range
-                  </span>
-                </div>
-              </div>
-
-              {/* OCR Scanner Simulation Card */}
-              <div className="p-5 rounded-[18px] bg-[#FAFBFB] border border-black/[0.06] flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                    <Camera className="w-5 h-5" />
+              {/* MANUAL OVERRIDE ACCORDION */}
+              <div className="p-4 rounded-[18px] bg-gray-50/70 border border-black/[0.06] space-y-3">
+                <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider block">
+                  Manual Code Fine-Tuning:
+                </span>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#4B5563] mb-1">SPN Number</label>
+                    <input
+                      type="number"
+                      value={spn}
+                      onChange={(e) => setSpn(e.target.value)}
+                      className="w-full h-10 px-3 font-mono text-xs font-bold rounded-lg border border-black/[0.1] bg-white text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20"
+                    />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-[#111827] block">
-                      Camera DTC OCR Scanner
-                    </span>
-                    <span className="text-[11px] text-[#6B7280]">
-                      Snap photo of instrument cluster or DAVIE-4 diagnostic interface
-                    </span>
+                    <label className="block text-[11px] font-bold text-[#4B5563] mb-1">FMI Failure Mode</label>
+                    <input
+                      type="number"
+                      value={fmi}
+                      onChange={(e) => setFmi(e.target.value)}
+                      className="w-full h-10 px-3 font-mono text-xs font-bold rounded-lg border border-black/[0.1] bg-white text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20"
+                    />
                   </div>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsScanningOCR(true);
-                    setTimeout(() => {
-                      setIsScanningOCR(false);
-                      setSpn("94");
-                      setFmi("1");
-                    }, 1000);
-                  }}
-                  className="px-4 py-2 rounded-full text-xs font-bold bg-white hover:bg-gray-50 text-[#111827] border border-black/[0.1] transition-all"
-                >
-                  {isScanningOCR ? "Scanning..." : "Scan Code"}
-                </button>
               </div>
             </div>
 

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * TORQ API Client â€” connects frontend to FastAPI backend at localhost:8000
  */
 
@@ -95,10 +95,72 @@ export interface SessionState {
   cost_estimate: CostEstimate | null;
   citations: SourceCitation[];
   root_cause: string | null;
+  llm_summary?: string;
+  truck_info?: Truck;
 }
 
-export async function fetchTrucks(): Promise<TruckBrief[]> {
-  return apiFetch<TruckBrief[]>("/api/trucks");
+export interface DtcSubsystemOption {
+  code: string;
+  spn: string;
+  fmi: string;
+  subsystem: string;
+  description: string;
+  keywords: string[];
+}
+
+export const DTC_SUBSYSTEMS: DtcSubsystemOption[] = [
+  {
+    code: "SPN-110-FMI-0",
+    spn: "110",
+    fmi: "0",
+    subsystem: "Engine Cooling System",
+    description: "Coolant Temperature — Data Valid But Above Normal (Overheating)",
+    keywords: ["coolant", "temp", "temperature", "overheat", "hot", "boiling", "radiator", "fan", "thermostat"],
+  },
+  {
+    code: "SPN-100-FMI-4",
+    spn: "100",
+    fmi: "4",
+    subsystem: "Engine Lubrication System",
+    description: "Oil Pressure — Voltage Below Normal / Low Operating Pressure",
+    keywords: ["oil", "pressure", "gauge", "lubrication", "dipstick", "pump", "psi", "kpa"],
+  },
+  {
+    code: "SPN-520322-FMI-7",
+    spn: "520322",
+    fmi: "7",
+    subsystem: "Aftertreatment SCR & DEF Dosing",
+    description: "SCR Catalyst Conversion Efficiency — System Not Responding / DEF Quality",
+    keywords: ["def", "urea", "scr", "injector", "catalyst", "exhaust fluid", "doser", "emissions", "derate"],
+  },
+  {
+    code: "SPN-3226-FMI-5",
+    spn: "3226",
+    fmi: "5",
+    subsystem: "Aftertreatment DPF System",
+    description: "DPF Differential Pressure — Regeneration Circuit Fault",
+    keywords: ["dpf", "soot", "regen", "particulate", "filter", "differential", "backpressure"],
+  },
+  {
+    code: "SPN-91-FMI-4",
+    spn: "91",
+    fmi: "4",
+    subsystem: "Electronic Throttle & Accelerator",
+    description: "Accelerator Pedal Position — Voltage Below Normal / Dead Pedal Response",
+    keywords: ["pedal", "throttle", "accelerator", "lag", "dead pedal", "limp", "potentiometer"],
+  },
+  {
+    code: "SPN-190-FMI-0",
+    spn: "190",
+    fmi: "0",
+    subsystem: "Engine Speed & VGT Actuator",
+    description: "Engine Speed — Data Valid But Above Normal (Overspeed / Turbo Surge)",
+    keywords: ["rpm", "speed", "overspeed", "turbo", "vgt", "actuator", "surge", "boost"],
+  },
+];
+
+export async function fetchTrucks(): Promise<Truck[]> {
+  return apiFetch<Truck[]>("/api/trucks");
 }
 
 export async function fetchTruck(id: string): Promise<Truck> {
