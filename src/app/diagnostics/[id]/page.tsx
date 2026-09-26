@@ -9,18 +9,23 @@ import {
   FileText, 
   CheckCircle2, 
   Clock, 
-  AlertTriangle,
-  Loader2,
-  ChevronRight,
-  ShieldCheck,
-  Sparkles,
-  TrendingUp,
-  Truck,
-  Layers,
-  Cpu,
-  Info
+  AlertTriangle, 
+  Loader2, 
+  ChevronRight, 
+  ShieldCheck, 
+  Sparkles, 
+  TrendingUp, 
+  Truck, 
+  Layers, 
+  Cpu, 
+  Info,
+  Share2,
+  Printer,
+  Compass,
+  AlertOctagon
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { FleetIntelligencePanel } from "@/components/diagnostic/FleetIntelligencePanel";
 import { fetchSession, submitTestResult, type SessionState } from "@/lib/api";
 
 export default function DiagnosisResultPage() {
@@ -35,6 +40,21 @@ export default function DiagnosisResultPage() {
   const [testNotes, setTestNotes] = useState<string>("");
   const [isSubmittingTest, setIsSubmittingTest] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleWhatsAppShare = () => {
+    if (!session) return;
+    const truckStr = session.truck_info 
+      ? `${session.truck_info.brand} ${session.truck_info.model} (${session.truck_info.year}) - VIN: ...${session.truck_info.vin.slice(-6)}` 
+      : "Commercial Fleet Truck";
+    const topCause = session.root_cause || session.candidate_causes[0]?.name || "Diagnostic Finding";
+    const costStr = session.cost_estimate ? `₹${Math.round(session.cost_estimate.total).toLocaleString()}` : "Estimate Pending";
+    const text = `*TORQ Diagnostic Assessment & Service Estimate*\n\n🚛 *Vehicle:* ${truckStr}\n⚠️ *Fault Code:* ${session.dtc_codes.join(", ")}\n🔍 *Leading Hypothesis:* ${topCause}\n💰 *PACCAR Estimate:* ${costStr}\n⏱️ *Status:* ${session.status.toUpperCase()}\n\nSession ID: ${session.session_id.slice(0, 8).toUpperCase()}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+  };
 
   const handleSubmitTest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,17 +148,50 @@ export default function DiagnosisResultPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full border border-black/[0.1] bg-white hover:bg-gray-50 text-xs font-bold text-[#111827] shadow-sm transition-all"
+              title="Print Work Order / Save PDF"
+            >
+              <Printer className="w-3.5 h-3.5 text-[#4B5563]" />
+              <span className="hidden sm:inline">Print / PDF</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleWhatsAppShare}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-xs font-bold text-emerald-900 shadow-sm transition-all"
+              title="Share Estimate with Fleet Manager via WhatsApp"
+            >
+              <Share2 className="w-3.5 h-3.5 text-emerald-700" />
+              <span>WhatsApp Estimate</span>
+            </button>
+            <Link href={`/diagnostics/${session.session_id}/workflow`}>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#111827] hover:bg-black text-white text-xs font-bold shadow-sm transition-all"
+              >
+                <Compass className="w-3.5 h-3.5 text-emerald-400" />
+                <span>5-Step Guided Workflow</span>
+              </button>
+            </Link>
             <Link href={`/reports/${session.session_id}`}>
-              <button type="button" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-black/[0.1] bg-white hover:bg-gray-50 text-xs font-bold text-[#111827] shadow-sm transition-all">
-                <FileText className="w-4 h-4 text-[#E5402C]" />
-                <span>View Full Report</span>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full border border-black/[0.1] bg-white hover:bg-gray-50 text-xs font-bold text-[#111827] shadow-sm transition-all"
+              >
+                <FileText className="w-3.5 h-3.5 text-[#E5402C]" />
+                <span className="hidden sm:inline">Full Report</span>
               </button>
             </Link>
             <Link href="/diagnostics/new">
-              <button type="button" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#E5402C] hover:bg-[#CF3722] text-white text-xs font-bold tracking-tight shadow-[0_4px_16px_rgba(229,64,44,0.25)] transition-all">
-                <Wrench className="w-4 h-4" />
-                <span>New Diagnosis</span>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#E5402C] hover:bg-[#CF3722] text-white text-xs font-bold tracking-tight shadow-[0_4px_16px_rgba(229,64,44,0.25)] transition-all"
+              >
+                <Wrench className="w-3.5 h-3.5" />
+                <span>New</span>
               </button>
             </Link>
           </div>
@@ -334,6 +387,35 @@ export default function DiagnosisResultPage() {
             </div>
           );
         })()}
+
+        {/* PACCAR OEM WORKSHOP SAFETY DIRECTIVE */}
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3.5">
+          <AlertOctagon className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-xs">
+            <span className="font-bold text-amber-900 uppercase tracking-wider block">
+              PACCAR OEM Workshop Safety Directive:
+            </span>
+            <span className="text-amber-800 font-medium">
+              {session.dtc_codes[0]?.includes("110")
+                ? "⚠️ HIGH THERMAL OVERPRESSURE HAZARD: System operating coolant temperature exceeds 105°C. Never release radiator pressure cap while hot. Wait minimum 30 minutes before breaking cooling circuit."
+                : session.dtc_codes[0]?.includes("520322")
+                ? "⚠️ CHEMICAL & EXTREME THERMAL HAZARD: SCR catalyst temperatures exceed 450°C during DPF active regeneration. Wear nitrile gloves and safety eye protection when disconnecting DEF injector couplings."
+                : session.dtc_codes[0]?.includes("100")
+                ? "⚠️ HYDRAULIC PRESSURE DISCHARGE: Do not disconnect oil pressure test port fittings under active engine cranking. Ensure mechanical gauge uses minimum 600 kPa rated steel braided hose."
+                : session.dtc_codes[0]?.includes("3226")
+                ? "⚠️ HIGH SOOT & EXHAUST DIRECTIVE: Exhaust gas temperatures exceed 600°C during active regeneration. Verify workshop exhaust extraction system is high-temp certified."
+                : "⚠️ GENERAL POWERTRAIN DIRECTIVE: Disconnect battery master isolation switch before probing ECM harness connectors to prevent voltage spike damage."}
+            </span>
+          </div>
+        </div>
+
+        {/* FLEET-WIDE PATTERN INTELLIGENCE (THE INTANGLES ANGLE) */}
+        {session.fleet_intelligence && (
+          <FleetIntelligencePanel
+            data={session.fleet_intelligence}
+            currentCost={session.cost_estimate?.total}
+          />
+        )}
 
         {/* TOP BANNER: LEADING HYPOTHESIS */}
         {topCandidate && (

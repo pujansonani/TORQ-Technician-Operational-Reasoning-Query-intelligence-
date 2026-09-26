@@ -4,6 +4,10 @@ import { DiagnosticSession, INITIAL_DEMO_DIAGNOSIS } from "./mockData";
 interface TorqStore {
   demoMode: boolean;
   setDemoMode: (enabled: boolean) => void;
+  isOfflineMode: boolean;
+  toggleOfflineMode: () => void;
+  language: "en" | "hi" | "mr";
+  setLanguage: (lang: "en" | "hi" | "mr") => void;
   activeSession: DiagnosticSession;
   updateTestOutcome: (result: "PASS" | "FAIL" | "INCONCLUSIVE", measuredValue: string) => void;
   resetDemoSession: () => void;
@@ -13,6 +17,22 @@ interface TorqStore {
 export const useTorqStore = create<TorqStore>((set) => ({
   demoMode: true,
   setDemoMode: (enabled) => set({ demoMode: enabled }),
+  isOfflineMode: typeof window !== "undefined" && localStorage.getItem("torq_offline_mode") === "true",
+  toggleOfflineMode: () =>
+    set((state) => {
+      const next = !state.isOfflineMode;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("torq_offline_mode", String(next));
+      }
+      return { isOfflineMode: next };
+    }),
+  language: (typeof window !== "undefined" && (localStorage.getItem("torq_language") as any)) || "en",
+  setLanguage: (lang) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("torq_language", lang);
+    }
+    set({ language: lang });
+  },
   activeSession: INITIAL_DEMO_DIAGNOSIS,
   
   updateTestOutcome: (result, measuredValue) =>

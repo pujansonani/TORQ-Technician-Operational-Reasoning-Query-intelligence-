@@ -28,3 +28,12 @@ async def get_similar_cases(
         truck_model=truck_model,
         days=days,
     )
+
+
+@router.get("/overview")
+async def get_fleet_overview(
+    db: AsyncSession = Depends(get_db),
+):
+    """Get fleet-wide analytics aggregated across all vehicles and repairs."""
+    return await fleet_intel.get_fleet_overview(db=db)
+

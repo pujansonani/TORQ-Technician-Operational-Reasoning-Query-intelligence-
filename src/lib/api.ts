@@ -59,6 +59,31 @@ export interface SourceCitation {
   relevance_score: number;
 }
 
+export interface FleetResolutionItem {
+  root_cause: string;
+  count: number;
+  percentage: number;
+}
+
+export interface FleetTcoImpact {
+  monthly_fuel_penalty_inr: number;
+  payback_period_months: number;
+  unrepaired_risk: string;
+}
+
+export interface FleetIntelligenceData {
+  total_cases: number;
+  period_days: number;
+  search_key: string;
+  matching_models: string[];
+  alert_message: string;
+  resolution_breakdown: FleetResolutionItem[];
+  avg_cost: number;
+  avg_labor_hours: number;
+  common_mileage_range: string;
+  fleet_tco_impact: FleetTcoImpact;
+}
+
 export interface DiagnosisResponse {
   session_id: string;
   dtc_codes: string[];
@@ -72,6 +97,7 @@ export interface DiagnosisResponse {
   diagnosis_complete: boolean;
   root_cause: string | null;
   llm_summary: string;
+  fleet_intelligence?: FleetIntelligenceData | null;
 }
 
 export interface TestResultPayload {
@@ -97,6 +123,7 @@ export interface SessionState {
   root_cause: string | null;
   llm_summary?: string;
   truck_info?: Truck;
+  fleet_intelligence?: FleetIntelligenceData | null;
 }
 
 export interface DtcSubsystemOption {
@@ -197,3 +224,59 @@ export async function fetchReport(sessionId: string): Promise<string> {
   if (!res.ok) throw new Error("Failed to fetch report");
   return res.text();
 }
+
+export async function fetchFleetPatterns(dtcCode: string, truckModel?: string): Promise<FleetIntelligenceData> {
+  const params = new URLSearchParams({ dtc_code: dtcCode });
+  if (truckModel) params.append("truck_model", truckModel);
+  return apiFetch<FleetIntelligenceData>(`/api/fleet/similar-cases?${params.toString()}`);
+}
+
+export interface BrandSummary {
+  brand: string;
+  truck_count: number;
+  repair_count: number;
+  avg_mileage_km: number;
+  models: string[];
+}
+
+export interface DtcRecurrenceItem {
+  code: string;
+  count: number;
+}
+
+export interface RecentRepairItem {
+  id: string;
+  truck: string;
+  vin: string;
+  dtc: string;
+  root_cause: string;
+  cost: number;
+  labor_hours: number;
+  date: string;
+  status: string;
+}
+
+export interface OemBulletinItem {
+  brand: string;
+  tsb_number: string;
+  title: string;
+  severity: "Critical" | "High" | "Medium" | "Low";
+  description: string;
+}
+
+export interface FleetOverviewData {
+  total_trucks: number;
+  total_repairs: number;
+  avg_repair_cost_inr: number;
+  avg_labor_hours: number;
+  first_time_fix_rate_pct: number;
+  brands: BrandSummary[];
+  dtc_recurrence: DtcRecurrenceItem[];
+  recent_repairs: RecentRepairItem[];
+  oem_bulletins: OemBulletinItem[];
+}
+
+export async function fetchFleetOverview(): Promise<FleetOverviewData> {
+  return apiFetch<FleetOverviewData>("/api/fleet/overview");
+}
+

@@ -33,6 +33,7 @@ from app.services.diagnostic_engine import DiagnosticEngine
 from app.services.rag_service import get_rag_service
 from app.services.torq_lock import TorqLockValidator
 from app.services.cost_estimator import CostEstimator
+from app.services.fleet_intelligence import FleetIntelligence
 from app.llm import get_llm_provider
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,7 @@ router = APIRouter(prefix="/api", tags=["diagnosis"])
 engine = DiagnosticEngine()
 torq_lock = TorqLockValidator()
 cost_estimator = CostEstimator()
+fleet_intel_service = FleetIntelligence()
 
 
 # ── Prompts for the LLM ─────────────────────────────────────────────
@@ -251,6 +253,15 @@ async def start_diagnosis(
     logger.info("Session ID:  %s", session.id)
     logger.info("=" * 72)
 
+    # Fleet Intelligence (Pattern detection & historical fleet benchmark)
+    fleet_data = None
+    try:
+        fleet_data = await fleet_intel_service.get_similar_cases(
+            db, primary_dtc, truck_model=truck_obj.model if truck_obj else None
+        )
+    except Exception as e:
+        logger.warning("Fleet intelligence query failed: %s", e)
+
     return DiagnosisResponse(
         session_id=session.id,
         dtc_codes=request.dtc_codes,
@@ -262,6 +273,7 @@ async def start_diagnosis(
         cost_estimate=cost_est,
         citations=citations,
         llm_summary=llm_summary,
+        fleet_intelligence=fleet_data,
     )
 
 
@@ -535,6 +547,16 @@ async def get_session(
         rag_service = get_rag_service()
         _, citations = rag_service.retrieve(session.symptom_text, session.dtc_codes)
 
+    # Fleet Intelligence (Pattern detection & historical fleet benchmark)
+    fleet_data = None
+    if primary_dtc:
+        try:
+            fleet_data = await fleet_intel_service.get_similar_cases(
+                db, primary_dtc, truck_model=truck_obj.model if truck_obj else None
+            )
+        except Exception as e:
+            logger.warning("Fleet intelligence query failed on session load: %s", e)
+
     logger.info("📋 [TORQ SESSION LOADED] %s | Status: %s | Completed Tests: %d", session.id, session.status, len(completed_tests))
 
     return SessionState(
@@ -554,6 +576,7 @@ async def get_session(
         root_cause=session.root_cause,
         llm_summary=llm_summary,
         truck_info=truck_info,
+        fleet_intelligence=fleet_data,
     )
 
 
