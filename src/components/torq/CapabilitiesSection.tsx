@@ -176,8 +176,11 @@ export const CapabilitiesSection: React.FC = () => {
   };
 
   return (
-    <section id="capabilities" className="relative w-full bg-[#F6F6F5] py-20 lg:py-24">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 space-y-10">
+    <section id="capabilities" className="relative w-full bg-[#F6F6F5] pt-16 sm:pt-24 pb-28 sm:pb-36 overflow-hidden">
+      {/* SEAMLESS GRADIENT BLEND FROM HERO 2 (White to #F6F6F5) */}
+      <div className="absolute inset-x-0 top-0 h-28 sm:h-44 bg-gradient-to-b from-white via-white/50 to-transparent pointer-events-none" />
+
+      <div className="relative z-20 max-w-[1280px] mx-auto px-4 sm:px-6 space-y-10">
         
         {/* SECTION HEADER */}
         <div className="space-y-2.5 max-w-2xl">
@@ -310,6 +313,9 @@ export const CapabilitiesSection: React.FC = () => {
         </div>
 
       </div>
+
+      {/* SEAMLESS GRADIENT BLEND TO FOOTER (#1A1A1A) */}
+      <div className="absolute inset-x-0 bottom-0 h-44 sm:h-60 bg-gradient-to-b from-transparent via-[#2A2A2A]/40 to-[#1A1A1A] pointer-events-none z-10" />
     </section>
   );
 };

@@ -4,7 +4,7 @@ import { ArrowUpRight, GitBranch, Mail, Terminal } from "lucide-react";
 
 export const TorqFooter: React.FC = () => {
   return (
-    <footer className="w-full bg-[#1A1A1A] text-white pt-16 pb-12 border-t border-white/10">
+    <footer className="relative w-full bg-[#1A1A1A] text-white pt-14 pb-12 overflow-hidden">
       <div className="max-w-[1280px] mx-auto px-6 space-y-12">
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">

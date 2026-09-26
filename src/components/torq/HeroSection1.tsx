@@ -179,7 +179,7 @@ export const HeroSection1: React.FC = () => {
       </div>
 
       {/* SEAMLESS GRADIENT BLEND TO WHITE (Merges Hero 1 pastel mint into Hero 2 white with zero hard cut) */}
-      <div className="absolute inset-x-0 bottom-0 h-44 sm:h-64 bg-gradient-to-b from-transparent via-[#DCE7DE]/30 to-white pointer-events-none z-10" />
+      <div className="absolute inset-x-0 bottom-0 h-48 sm:h-72 bg-gradient-to-b from-transparent via-[#DCE7DE]/20 to-white pointer-events-none z-10" />
     </section>
   );
 };

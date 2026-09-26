@@ -17,6 +17,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         {children}
       </main>
 
+      {/* SEAMLESS GRADIENT BLEND TO FOOTER (#1A1A1A) */}
+      <div className="w-full h-24 sm:h-36 bg-gradient-to-b from-[#F8FAFC] to-[#1A1A1A] pointer-events-none" />
+
       {/* Unified Modern Footer */}
       <TorqFooter />
     </div>

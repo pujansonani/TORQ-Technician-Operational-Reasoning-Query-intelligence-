@@ -117,6 +117,9 @@ export const HeroSection2: React.FC = () => {
 
       </div>
 
+      {/* SEAMLESS GRADIENT BLEND TO CAPABILITIES (#F6F6F5) */}
+      <div className="absolute inset-x-0 bottom-0 h-36 sm:h-52 bg-gradient-to-b from-transparent via-[#FAFBFB]/50 to-[#F6F6F5] pointer-events-none" />
+
       {/* BOTTOM-RIGHT CORNER: FLOATING WORKSHOP ASSISTANT WIDGET */}
       <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-2.5">
         
