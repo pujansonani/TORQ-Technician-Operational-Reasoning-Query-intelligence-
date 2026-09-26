@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
 
     # ── LLM Model names (overridable) ─────────────────────────────────
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-120b"
     anthropic_model: str = "claude-sonnet-4-20250514"
     openai_model: str = "gpt-4o"
 
