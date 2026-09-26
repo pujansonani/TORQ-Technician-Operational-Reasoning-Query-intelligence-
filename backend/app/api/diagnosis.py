@@ -360,6 +360,12 @@ async def submit_test_result(
     top_cause_id, _ = engine.get_top_cause(updated_posteriors)
     cost_est = await cost_estimator.estimate(db, top_cause_id, dtc_entry)
 
+    # Citations
+    citations = []
+    if dtc_entry:
+        rag_service = get_rag_service()
+        _, citations = rag_service.retrieve(session.symptom_text, session.dtc_codes)
+
     # ── Console logging for terminal visibility ──
     logger.info("=" * 72)
     logger.info("🧪 [TORQ TEST RESULT SUBMITTED]")
