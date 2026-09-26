@@ -1,30 +1,30 @@
 "use client";
 
 import React from "react";
-import { HeroSection1 } from "@/components/emons/HeroSection1";
-import { EmonsNavbar } from "@/components/emons/EmonsNavbar";
-import { HeroSection2 } from "@/components/emons/HeroSection2";
-import { ServicesSection } from "@/components/emons/ServicesSection";
-import { EmonsFooter } from "@/components/emons/EmonsFooter";
+import { TorqNavbar } from "@/components/torq/TorqNavbar";
+import { HeroSection1 } from "@/components/torq/HeroSection1";
+import { HeroSection2 } from "@/components/torq/HeroSection2";
+import { CapabilitiesSection } from "@/components/torq/CapabilitiesSection";
+import { TorqFooter } from "@/components/torq/TorqFooter";
 
-export default function EmonsLandingPage() {
+export default function TorqLandingPage() {
   return (
     <main className="min-h-screen bg-white text-[#1A1A1A] font-sans antialiased selection:bg-[#E5402C]/15 selection:text-[#E5402C]">
       
-      {/* 1. HERO SECTION 1 — Product Screenshot Style Hero (Soft Mint Full-Width Background) */}
+      {/* 1. NAVBAR — True Top Element, Sticky with Shadow-on-Scroll */}
+      <TorqNavbar />
+
+      {/* 2. HERO SECTION 1 — Diagnostic Bay Isometric Hero with Live Telemetry Overlays */}
       <HeroSection1 />
 
-      {/* 2. NAVBAR — Sticky White Nav Bar Between the Two Hero Sections */}
-      <EmonsNavbar />
-
-      {/* 3. HERO SECTION 2 — Editorial Split Hero (White Background, Red Semi Truck, 3-Line Headline) */}
+      {/* 3. HERO SECTION 2 — Editorial Split Hero: "Your fleet's downtime. Our diagnosis. Welcome to TORQ." */}
       <HeroSection2 />
 
-      {/* 4. SERVICES SECTION — Light Gray Soft Background, 4x2 Grid, Active Rail Card */}
-      <ServicesSection />
+      {/* 4. CAPABILITIES SECTION — How TORQ Diagnoses a Fault (8 Technical Cards, Bayesian Reasoning Highlighted) */}
+      <CapabilitiesSection />
 
-      {/* 5. EMONS FOOTER */}
-      <EmonsFooter />
+      {/* 5. TORQ FOOTER — Paccar India Hackathon Attribution & Technical Documentation */}
+      <TorqFooter />
 
     </main>
   );

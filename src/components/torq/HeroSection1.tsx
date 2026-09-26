@@ -2,19 +2,19 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { 
-  Building2, 
   ArrowRight, 
   Plus, 
-  CheckCircle2, 
+  Wrench, 
+  Cpu, 
+  Gauge, 
   ShieldCheck, 
-  Truck, 
-  Compass, 
-  PhoneCall, 
-  MessageSquare,
-  Sparkles,
-  Layers,
-  MapPin
+  FileCheck,
+  Activity,
+  CheckCircle2,
+  SlidersHorizontal,
+  Layers
 } from "lucide-react";
 import { PillButton } from "./PillButton";
 
@@ -45,74 +45,75 @@ export const HeroSection1: React.FC = () => {
         {/* FRAMED ILLUSTRATION CONTAINER */}
         <div className="relative w-full rounded-[16px] overflow-hidden bg-white shadow-[0_20px_60px_rgba(26,26,26,0.08)] border border-white/60">
           
-          {/* THIN NAV BAR STRIP ALONG TOP OF ILLUSTRATION (Product Screenshot UI) */}
+          {/* THIN NAV BAR STRIP ALONG TOP OF ILLUSTRATION (Product Diagnostic Screenshot UI) */}
           <div className="w-full h-11 bg-white/95 backdrop-blur-sm border-b border-[#F6F6F5] px-4 sm:px-6 flex items-center justify-between z-20 relative">
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-1.5">
-                <div className="w-5 h-5 bg-[#E5402C] rounded-[4px] flex items-center justify-center text-white text-[10px] font-black italic">
-                  E
+                <div className="w-5 h-5 bg-[#E5402C] rounded-[4px] flex items-center justify-center text-white text-[10px] font-black">
+                  T
                 </div>
                 <span className="font-semibold text-xs tracking-tight text-[#1A1A1A]">
-                  emons
+                  torq
                 </span>
               </div>
               <div className="hidden sm:flex items-center gap-4 text-[11px] font-medium text-[#6E6E6E]">
-                <span className="text-[#1A1A1A]">Logistik</span>
-                <span>Spedition</span>
-                <span>Netzwerk</span>
-                <span>Standorte</span>
+                <span className="text-[#1A1A1A] font-semibold">Diagnostic Bay 01</span>
+                <span>J1939 CAN Bus</span>
+                <span>Live Telemetry</span>
+                <span>DAVIE4 Bridge</span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="hidden md:inline-flex items-center gap-1 text-[11px] text-[#9A9A9A]">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live Hub Status: Active
+                CAN Link: Active (250 kbps)
               </span>
               <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  className="px-2.5 py-1 text-[11px] font-medium text-[#E5402C] border border-[#F6C9BE] rounded-full hover:bg-[#FDF2F0] transition-colors"
-                >
-                  Sendungsverfolgung
-                </button>
-                <button
-                  type="button"
-                  className="px-2.5 py-1 text-[11px] font-medium text-white bg-[#E5402C] rounded-full hover:bg-[#CF3722] transition-colors flex items-center gap-1"
-                >
-                  <MessageSquare className="w-3 h-3" />
-                  <span>Live Chat</span>
-                </button>
+                <Link href="/dashboard">
+                  <button
+                    type="button"
+                    className="px-2.5 py-1 text-[11px] font-medium text-[#E5402C] border border-[#F6C9BE] rounded-full hover:bg-[#FDF2F0] transition-colors"
+                  >
+                    Session Tracking
+                  </button>
+                </Link>
+                <Link href="/diagnostics/TRQ-2026-0941">
+                  <button
+                    type="button"
+                    className="px-2.5 py-1 text-[11px] font-medium text-white bg-[#E5402C] rounded-full hover:bg-[#CF3722] transition-colors flex items-center gap-1"
+                  >
+                    <Activity className="w-3 h-3" />
+                    <span>Live Diagnosis</span>
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
 
-          {/* MAIN ISOMETRIC WAREHOUSE VISUAL */}
+          {/* MAIN ISOMETRIC DIAGNOSTIC BAY VISUAL */}
           <div className="relative w-full h-[460px] sm:h-[580px] lg:h-[680px]">
             <Image
-              src="/images/emons_warehouse_iso.jpg"
-              alt="Emons European Logistics Center and Loading Dock Isometric View"
+              src="/images/torq_diagnostic_bay_iso.jpg"
+              alt="TORQ Heavy Duty Truck Service Bay Diagnostic Isometric View"
               fill
               priority
               className="object-cover object-center"
               sizes="(max-width: 1280px) 100vw, 1280px"
             />
 
-            {/* OVERLAY GRADIENT FOR READABILITY */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent pointer-events-none" />
-
-            {/* FLOATING CARD 1: TOP-RIGHT "Logistikzentrum Laderampe" */}
-            <div className="hidden md:block absolute top-6 right-6 w-[310px] bg-white/95 backdrop-blur-md rounded-[16px] p-5 shadow-[0_12px_36px_rgba(26,26,26,0.12)] border border-white/80 z-20">
+            {/* FLOATING CARD 1: TOP-RIGHT "TORQ Diagnostic Engine" */}
+            <div className="hidden md:block absolute top-6 right-6 w-[320px] bg-white/95 backdrop-blur-md rounded-[16px] p-5 shadow-[0_12px_36px_rgba(26,26,26,0.12)] border border-white/80 z-20">
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-xl bg-[#FAF4F2] text-[#E5402C] flex items-center justify-center shrink-0 border border-[#F6C9BE]/50">
-                  <Building2 className="w-4 h-4" />
+                  <Activity className="w-4 h-4" />
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="text-[14px] font-semibold text-[#1A1A1A] leading-tight">
-                    Logistikzentrum Laderampe
+                    TORQ Diagnostic Engine
                   </h4>
                   <p className="text-[12px] text-[#6E6E6E] leading-snug">
-                    Hub Köln-Gremberghoven Central Hub
+                    Live inference — Paccar Fleet Network
                   </p>
                 </div>
               </div>
@@ -120,136 +121,134 @@ export const HeroSection1: React.FC = () => {
               {/* Stats List (4 Rows) */}
               <div className="mt-4 pt-3 border-t border-[#F6F6F5] space-y-2 text-[12px]">
                 <div className="flex items-center justify-between">
-                  <span className="text-[#6E6E6E]">Warehouses</span>
-                  <span className="font-semibold text-[#1A1A1A]">150+ locations</span>
+                  <span className="text-[#6E6E6E]">DTC codes indexed</span>
+                  <span className="font-semibold text-[#1A1A1A] font-mono">15,000+</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[#6E6E6E]">On-time delivery</span>
-                  <span className="font-semibold text-emerald-600">99.2% rate</span>
+                  <span className="text-[#6E6E6E]">Diagnosis confidence avg</span>
+                  <span className="font-semibold text-emerald-600 font-mono">87%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[#6E6E6E]">Shipments processed</span>
-                  <span className="font-semibold text-[#1A1A1A]">1M+ per annum</span>
+                  <span className="text-[#6E6E6E]">Avg. time-to-cause</span>
+                  <span className="font-semibold text-[#1A1A1A] font-mono">4.2 min</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[#6E6E6E]">Years of service</span>
-                  <span className="font-semibold text-[#1A1A1A]">95 years</span>
+                  <span className="text-[#6E6E6E]">Escalation rate</span>
+                  <span className="font-semibold text-emerald-600 font-mono">&lt; 12%</span>
                 </div>
               </div>
 
               <div className="mt-4 pt-3 border-t border-[#F6F6F5] flex justify-between items-center">
                 <a
-                  href="#services"
+                  href="#capabilities"
                   className="text-[12px] font-semibold text-[#E5402C] hover:text-[#CF3722] flex items-center gap-1 group"
                 >
-                  <span>Our Logistics Solutions</span>
+                  <span>How TORQ reasons</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </a>
               </div>
             </div>
 
-            {/* FLOATING CARD 2: BOTTOM-LEFT "Logistiklösungen mit Emons" */}
+            {/* FLOATING CARD 2: BOTTOM-LEFT "Diagnose faster with TORQ" */}
             <div className="hidden sm:block absolute bottom-6 left-6 max-w-[380px] bg-white/95 backdrop-blur-md rounded-[16px] p-6 shadow-[0_12px_36px_rgba(26,26,26,0.12)] border border-white/80 z-20 space-y-4">
               <div className="space-y-1.5">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#9A9A9A]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#E5402C]" />
-                  Corporate Freight Intelligence
+                  AI-ASSISTED DIAGNOSTICS
                 </span>
                 <h3 className="text-[18px] font-medium tracking-tight text-[#1A1A1A] leading-snug">
-                  Logistiklösungen mit Emons
+                  Diagnose faster with TORQ
                 </h3>
                 <p className="text-[13px] text-[#6E6E6E] leading-relaxed">
-                  Tailored multi-modal transport and contract logistics. Connecting central European supply chains with zero emission corridor routing.
+                  Bayesian reasoning over DTC codes and symptoms, backed by a RAG knowledge base — TORQ narrows down root cause and tells you the next test to run.
                 </p>
               </div>
 
               {/* Two Pill CTA Buttons */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <PillButton variant="solid" size="sm">
-                  Our logistics services
-                </PillButton>
-                <PillButton variant="outline" size="sm">
-                  Our freight forwarding
-                </PillButton>
+                <Link href="/diagnostics/new">
+                  <PillButton variant="solid" size="sm">
+                    Start a diagnosis
+                  </PillButton>
+                </Link>
+                <a href="#capabilities">
+                  <PillButton variant="outline" size="sm">
+                    View methodology
+                  </PillButton>
+                </a>
               </div>
 
-              {/* Cluster of 5 Tiny Circular Outline Icon Buttons */}
+              {/* Diagnostic Icons Row & Attribution */}
               <div className="pt-2 border-t border-[#F6F6F5] flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  {[Truck, Layers, Compass, ShieldCheck, MapPin].map((Icon, idx) => (
-                    <button
+                  {[Wrench, Cpu, Gauge, ShieldCheck, FileCheck].map((Icon, idx) => (
+                    <div
                       key={idx}
-                      type="button"
-                      className="w-7 h-7 rounded-full border border-[#F6C9BE] text-[#E5402C] hover:bg-[#FDF2F0] hover:border-[#F2A28E] flex items-center justify-center transition-colors"
-                      title="Emons Service Indicator"
+                      className="w-7 h-7 rounded-full border border-[#F6C9BE] text-[#E5402C] bg-white flex items-center justify-center shadow-xs"
+                      title="TORQ Diagnostic Engine Modular Component"
                     >
                       <Icon className="w-3.5 h-3.5 stroke-[1.75]" />
-                    </button>
+                    </div>
                   ))}
                 </div>
                 <span className="text-[11px] font-medium text-[#9A9A9A]">
-                  ISO 9001:2015
+                  Built for Paccar India Hackathon
                 </span>
               </div>
             </div>
 
             {/* FLOATING HOTSPOT MARKER (+) MID-SCENE */}
-            <div className="absolute top-[48%] left-[45%] z-20">
+            <div className="absolute top-[48%] left-[48%] z-20">
               <button
                 type="button"
                 onClick={() => setActiveHotspot(!activeHotspot)}
                 className="relative group w-8 h-8 rounded-full bg-[#E5402C] text-white flex items-center justify-center shadow-lg hover:bg-[#CF3722] hover:scale-105 transition-all"
-                title="Loading Bay Sensor Telemetry"
+                title="Live Port Telemetry"
               >
                 <span className="absolute inset-0 rounded-full bg-[#E5402C] animate-ping opacity-30" />
                 <Plus className={`w-4 h-4 transition-transform duration-200 ${activeHotspot ? "rotate-45" : ""}`} />
               </button>
 
-              {/* Interactive Tooltip Card */}
+              {/* Interactive Telemetry Tooltip */}
               {activeHotspot && (
-                <div className="absolute left-10 top-0 w-60 bg-white rounded-xl p-3.5 shadow-xl border border-[#F6F6F5] text-xs z-30 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute left-10 top-0 w-64 bg-white rounded-xl p-3.5 shadow-xl border border-[#F6F6F5] text-xs z-30 animate-in fade-in zoom-in-95 duration-150">
                   <div className="font-semibold text-[#1A1A1A] flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    Bay 14: Electric Fleet Loading
+                    J1939 CAN Port: Active Stream
                   </div>
                   <p className="text-[#6E6E6E] text-[11px] mt-1 leading-snug">
-                    Real-time automated dock management. Fast-turnaround turnarounds under 35 mins.
+                    Telemetry: SPN 94 / FMI 1 (Fuel Delivery Pressure). Live Bayesian prior initialized at 62% confidence.
                   </p>
                 </div>
               )}
-            </div>
-
-            {/* BOTTOM-RIGHT PARTIALLY VISIBLE PILL CTA */}
-            <div className="hidden lg:flex absolute bottom-6 right-6 items-center gap-2 z-20">
-              <PillButton variant="light" size="sm">
-                Zu allen Leistungen
-              </PillButton>
             </div>
 
           </div>
 
         </div>
 
-        {/* MOBILE FALLBACK STACKED CARDS (So information is perfectly readable on phones) */}
+        {/* MOBILE FALLBACK STACKED CARDS */}
         <div className="mt-6 md:hidden space-y-4">
           <div className="bg-white rounded-[16px] p-5 shadow-sm border border-white space-y-3">
             <h4 className="text-[16px] font-semibold text-[#1A1A1A]">
-              Logistikzentrum Laderampe
+              TORQ Diagnostic Engine
             </h4>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2 bg-[#F6F6F5] rounded-lg">
-                <span className="text-[#6E6E6E] block text-[10px]">Warehouses</span>
-                <span className="font-bold text-[#1A1A1A]">150+ Hubs</span>
+                <span className="text-[#6E6E6E] block text-[10px]">DTC Database</span>
+                <span className="font-bold text-[#1A1A1A]">15,000+ Codes</span>
               </div>
               <div className="p-2 bg-[#F6F6F5] rounded-lg">
-                <span className="text-[#6E6E6E] block text-[10px]">On-time Rate</span>
-                <span className="font-bold text-emerald-600">99.2%</span>
+                <span className="text-[#6E6E6E] block text-[10px]">Avg Confidence</span>
+                <span className="font-bold text-emerald-600">87%</span>
               </div>
             </div>
             <div className="flex gap-2 pt-1">
-              <PillButton variant="solid" size="sm">
-                Our logistics services
-              </PillButton>
+              <Link href="/diagnostics/new" className="w-full">
+                <PillButton variant="solid" size="sm" className="w-full">
+                  Start a diagnosis
+                </PillButton>
+              </Link>
             </div>
           </div>
         </div>

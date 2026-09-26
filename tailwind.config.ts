@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        emons: {
+        brand: {
           red: "#E5402C",
           redHover: "#CF3722",
           ink: "#1A1A1A",

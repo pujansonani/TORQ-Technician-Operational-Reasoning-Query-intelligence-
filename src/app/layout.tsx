@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Emons — Your cargo. Our mission. Welcome to Emons.",
-  description: "Modern European freight forwarding, transport logistics and digital supply chain solutions since 1928.",
+  title: "TORQ — AI Diagnostic Copilot for Truck Service Technicians",
+  description: "AI Diagnostic Copilot for Truck Service Technicians, built for the Paccar India Hackathon. Evidence-based reasoning over SAE J1939 fault codes.",
 };
 
 export default function RootLayout({
