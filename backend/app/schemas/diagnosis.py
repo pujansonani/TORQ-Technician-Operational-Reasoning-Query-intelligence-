@@ -93,6 +93,9 @@ class SessionState(BaseModel):
     recommended_test: RecommendedTest | None = None
     confidence_score: float
     should_escalate: bool = False
+    escalation_reason: str = ""
     cost_estimate: CostEstimate | None = None
     citations: list[SourceCitation] = Field(default_factory=list)
     root_cause: str | None = None
+    llm_summary: str = ""
+    truck_info: dict[str, Any] | None = None

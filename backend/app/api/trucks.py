@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/trucks", tags=["trucks"])
 
 
-@router.get("", response_model=list[TruckBrief])
+@router.get("", response_model=list[TruckOut])
 async def list_trucks(db: AsyncSession = Depends(get_db)):
     """List all trucks in the fleet."""
     result = await db.execute(select(Truck).order_by(Truck.brand, Truck.model))

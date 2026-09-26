@@ -86,13 +86,34 @@ class CostEstimator:
                     "line_total": 0.0,
                 })
 
-        # Labor estimate
-        labor_hours = cause_info.get("estimated_labor_hours", 1.0)
-        labor_cost = labor_hours * self._labor_rate
+        # Labor estimate with chassis and engine packaging factors
+        base_labor_hours = float(cause_info.get("estimated_labor_hours", 1.5))
+        model_str = (truck_model or "").lower()
 
-        # Consumables (gaskets, fluids, etc.) — percentage of parts
-        consumables = parts_total * DEFAULT_CONSUMABLES_PERCENT
-        total = parts_total + labor_cost + consumables
+        # Chassis packaging multipliers:
+        # Aerodynamic cowls (T680, 579) require aero fairing and inner shield removal
+        # Vocational/heavy-haul (T880, 567) require belly pan and PTO clearance
+        # Long-hood conventionals (389, W990) offer open walk-in bay access
+        if any(m in model_str for m in ("t680", "579")):
+            labor_multiplier = 1.20
+            hourly_rate = 880.0
+        elif any(m in model_str for m in ("t880", "567")):
+            labor_multiplier = 1.25
+            hourly_rate = 920.0
+        elif any(m in model_str for m in ("389", "w990")):
+            labor_multiplier = 1.05
+            hourly_rate = 850.0
+        else:
+            labor_multiplier = 1.0
+            hourly_rate = self._labor_rate
+
+        labor_hours = round(base_labor_hours * labor_multiplier, 1)
+        labor_cost = labor_hours * hourly_rate
+
+        # Workshop consumables (O-rings, sealants, threadlocker, HazMat disposal fee)
+        consumables = round(max(350.0, parts_total * DEFAULT_CONSUMABLES_PERCENT + (labor_hours * 85.0)), 2)
+
+        total = round(parts_total + labor_cost + consumables, 2)
 
         cause_name = cause_info.get("name", cause_id)
 
@@ -101,7 +122,7 @@ class CostEstimator:
             cause_name=cause_name,
             parts=parts_list,
             labor_hours=labor_hours,
-            labor_rate_per_hour=self._labor_rate,
-            consumables=round(consumables, 2),
-            total=round(total, 2),
+            labor_rate_per_hour=hourly_rate,
+            consumables=consumables,
+            total=total,
         )

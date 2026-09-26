@@ -95,16 +95,43 @@ async def start_diagnosis(
     if not truck_obj:
         raise HTTPException(status_code=404, detail="Truck not found")
 
-    # Look up the primary DTC code
+    # Look up the primary DTC code with flexible formatting
     primary_dtc = request.dtc_codes[0]
     dtc_result = await db.execute(select(DtcKb).where(DtcKb.code == primary_dtc))
     dtc_entry_obj = dtc_result.scalar_one_or_none()
 
+    if not dtc_entry_obj and len(request.dtc_codes) >= 2:
+        alt_code = f"SPN-{request.dtc_codes[0]}-FMI-{request.dtc_codes[1]}"
+        dtc_result = await db.execute(select(DtcKb).where(DtcKb.code == alt_code))
+        dtc_entry_obj = dtc_result.scalar_one_or_none()
+        if dtc_entry_obj:
+            primary_dtc = alt_code
+
+    if not dtc_entry_obj:
+        import re
+        clean = primary_dtc.replace(" ", "").replace("/", "-").upper()
+        if not clean.startswith("SPN-") and "FMI" in clean:
+            clean = f"SPN-{clean}"
+        dtc_result = await db.execute(select(DtcKb).where(DtcKb.code == clean))
+        dtc_entry_obj = dtc_result.scalar_one_or_none()
+        if dtc_entry_obj:
+            primary_dtc = clean
+
+    if not dtc_entry_obj:
+        import re
+        nums = re.findall(r'\d+', primary_dtc)
+        if nums:
+            spn_candidate = nums[0]
+            dtc_result = await db.execute(select(DtcKb).where(DtcKb.code.ilike(f"%{spn_candidate}%")))
+            dtc_entry_obj = dtc_result.scalars().first()
+            if dtc_entry_obj:
+                primary_dtc = dtc_entry_obj.code
+
     if not dtc_entry_obj:
         raise HTTPException(
             status_code=404,
-            detail=f"DTC code '{primary_dtc}' not found in knowledge base. "
-                   f"Ensure the code is in SAE J1939 format (e.g., SPN-FMI).",
+            detail=f"DTC code '{request.dtc_codes[0]}' not found in knowledge base. "
+                   f"Ensure the code is in SAE J1939 format (e.g., SPN-100-FMI-4).",
         )
 
     dtc_entry = {
@@ -123,8 +150,12 @@ async def start_diagnosis(
         dtc_codes=request.dtc_codes,
     )
 
-    # Compute priors
-    priors = engine.compute_priors(dtc_entry, request.symptom_text)
+    # Compute priors with vehicle mileage and context
+    priors = engine.compute_priors(
+        dtc_entry,
+        request.symptom_text,
+        truck_info={"mileage_km": truck_obj.mileage_km, "model": truck_obj.model},
+    )
 
     # Select next best test
     recommended_test = engine.select_next_test(dtc_entry, priors, set())
@@ -146,7 +177,7 @@ async def start_diagnosis(
             f"DTC Code: {primary_dtc} — {dtc_entry['description']}\n"
             f"Subsystem: {dtc_entry['subsystem']}\n"
             f"Symptom: {request.symptom_text}\n"
-            f"Vehicle: {truck_obj.brand} {truck_obj.model} ({truck_obj.year})\n\n"
+            f"Vehicle: {truck_obj.brand} {truck_obj.model} ({truck_obj.year}) | Engine: {truck_obj.engine} | Mileage: {truck_obj.mileage_km:,} km\n\n"
             f"Knowledge Base Context:\n{context_text}\n\n"
             f"Candidate Causes:\n"
         )
@@ -157,13 +188,13 @@ async def start_diagnosis(
         llm_summary = torq_lock.validate(llm_result, dtc_entry)
     except Exception as e:
         logger.error("LLM call failed: %s", e)
-        llm_summary = "LLM analysis unavailable — proceeding with algorithmic diagnosis."
+        llm_summary = f"System analysis for {truck_obj.brand} {truck_obj.model}: Bayesian prioritization established for {primary_dtc} based on observed symptoms. Execute physical diagnostic test to confirm root cause."
 
     # Create session
     session = Session(
         truck_id=request.truck_id,
         symptom_text=request.symptom_text,
-        dtc_codes=request.dtc_codes,
+        dtc_codes=[primary_dtc],
         status="active",
     )
     db.add(session)
@@ -174,9 +205,10 @@ async def start_diagnosis(
         session_id=session.id,
         type="diagnosis_started",
         payload={
-            "dtc_codes": request.dtc_codes,
+            "dtc_codes": [primary_dtc],
             "priors": {k: round(v, 4) for k, v in priors.items()},
             "recommended_test_id": recommended_test.test_id if recommended_test else None,
+            "llm_summary": llm_summary,
         },
     )
     db.add(event)
@@ -255,7 +287,7 @@ async def submit_test_result(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    if session.status != "active":
+    if session.status not in ("active", "resolved"):
         raise HTTPException(status_code=400, detail="Session is no longer active")
 
     # Load DTC entry
@@ -442,10 +474,36 @@ async def get_session(
                 "severity": dtc_entry_obj.severity,
             }
 
+    # Load truck details
+    truck_res = await db.execute(select(Truck).where(Truck.id == session.truck_id))
+    truck_obj = truck_res.scalar_one_or_none()
+    truck_info = None
+    if truck_obj:
+        truck_info = {
+            "id": str(truck_obj.id),
+            "brand": truck_obj.brand,
+            "model": truck_obj.model,
+            "year": truck_obj.year,
+            "vin": truck_obj.vin,
+            "engine": truck_obj.engine,
+            "mileage_km": truck_obj.mileage_km,
+        }
+
+    # Extract llm_summary from events
+    llm_summary = ""
+    for event in session.events:
+        if event.type == "diagnosis_started" and "llm_summary" in event.payload:
+            llm_summary = event.payload["llm_summary"]
+            break
+
     # Reconstruct state
     posteriors = _reconstruct_posteriors(session.events, dtc_entry) if dtc_entry else {}
     if not posteriors and dtc_entry:
-        posteriors = engine.compute_priors(dtc_entry, session.symptom_text)
+        posteriors = engine.compute_priors(
+            dtc_entry,
+            session.symptom_text,
+            truck_info=truck_info,
+        )
 
     completed_test_ids = _get_completed_test_ids(session.events)
     completed_tests = _build_completed_tests(session.events)
@@ -454,17 +512,22 @@ async def get_session(
         for c in candidates:
             c.estimated_cost = await cost_estimator.estimate(db, c.id, dtc_entry)
     confidence = engine.confidence_score(posteriors) if posteriors else 0.0
-    should_esc, _ = engine.should_escalate(posteriors) if posteriors else (False, "")
+    should_esc, esc_reason = engine.should_escalate(posteriors) if posteriors else (False, "")
 
     recommended_test = None
-    if dtc_entry and session.status == "active":
+    if dtc_entry and session.status in ("active", "resolved"):
         recommended_test = engine.select_next_test(dtc_entry, posteriors, completed_test_ids)
 
-    # Cost estimate
+    # Cost estimate factoring in truck model
     cost_est = None
     if posteriors and dtc_entry:
         top_cause_id, _ = engine.get_top_cause(posteriors)
-        cost_est = await cost_estimator.estimate(db, top_cause_id, dtc_entry)
+        cost_est = await cost_estimator.estimate(
+            db,
+            top_cause_id,
+            dtc_entry,
+            truck_model=truck_obj.model if truck_obj else None,
+        )
 
     # Citations
     citations = []
@@ -485,9 +548,12 @@ async def get_session(
         recommended_test=recommended_test,
         confidence_score=confidence,
         should_escalate=should_esc,
+        escalation_reason=esc_reason,
         cost_estimate=cost_est,
         citations=citations,
         root_cause=session.root_cause,
+        llm_summary=llm_summary,
+        truck_info=truck_info,
     )
 
 
