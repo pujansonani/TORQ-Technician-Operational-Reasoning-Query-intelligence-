@@ -19,6 +19,7 @@ export default function WorkflowPage() {
   const [testResult, setTestResult] = useState("");
   const [testNotes, setTestNotes] = useState("");
   const [error, setError] = useState("");
+  const [selectedCauseId, setSelectedCauseId] = useState<string | null>(null);
 
   const loadSession = useCallback(async () => {
     try {
@@ -256,23 +257,29 @@ export default function WorkflowPage() {
           {/* Candidate Causes */}
           <div className="torq-card">
             <div className="torq-card-header">
-              <h2 className="font-semibold text-dark text-sm">Candidate Root Causes</h2>
+              <div>
+                <h2 className="font-semibold text-dark text-sm">Candidate Root Causes</h2>
+                <p className="text-xs text-surface-500 mt-0.5">Click any cause to inspect its specific parts & repair cost</p>
+              </div>
               <span className="text-xs text-surface-500">
                 {session.candidate_causes.length} candidates
               </span>
             </div>
-            <div className="torq-card-body space-y-4">
+            <div className="torq-card-body space-y-3">
               {session.candidate_causes.map((cause, i) => (
                 <div
                   key={cause.id}
-                  className={`p-4 rounded-lg border transition-all ${
-                    i === 0
-                      ? "border-primary/30 bg-primary-50/30 shadow-sm"
+                  onClick={() => setSelectedCauseId(selectedCauseId === cause.id ? null : cause.id)}
+                  className={`p-4 rounded-lg border transition-all cursor-pointer hover:border-primary/50 ${
+                    selectedCauseId === cause.id
+                      ? "border-primary bg-primary-50/50 ring-2 ring-primary/30 shadow-md"
+                      : i === 0
+                      ? "border-primary/30 bg-primary-50/20 shadow-sm"
                       : "border-surface-200 bg-white"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span
                         className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                           i === 0
@@ -282,7 +289,12 @@ export default function WorkflowPage() {
                       >
                         {i + 1}
                       </span>
-                      <span className="font-medium text-dark text-sm">{cause.name}</span>
+                      <span className="font-semibold text-dark text-sm">{cause.name}</span>
+                      {cause.estimated_cost && (
+                        <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-300">
+                          {formatCurrency(cause.estimated_cost.total)}
+                        </span>
+                      )}
                     </div>
                     <span
                       className={`text-sm font-bold ${
@@ -313,7 +325,7 @@ export default function WorkflowPage() {
                     <div className="mt-2 space-y-1">
                       {cause.evidence.map((ev, j) => (
                         <p key={j} className="text-xs text-surface-500 flex items-center gap-1">
-                          <span className="text-success">✓</span> {ev}
+                          <span className="text-success font-bold">✓</span> {ev}
                         </p>
                       ))}
                     </div>
@@ -494,65 +506,82 @@ export default function WorkflowPage() {
         {/* Right column: Cost + Citations */}
         <div className="space-y-6">
           {/* Cost Estimate */}
-          {session.cost_estimate && (
-            <div className="torq-card">
-              <div className="torq-card-header">
-                <div>
-                  <h3 className="font-semibold text-dark text-sm">Real-Time Cost Estimate</h3>
-                  {session.cost_estimate.cause_name && (
-                    <p className="text-xs text-primary font-medium mt-0.5">
-                      Target: {session.cost_estimate.cause_name}
-                    </p>
-                  )}
-                </div>
-                <div className="demo-badge">Live Estimate</div>
-              </div>
-              <div className="torq-card-body space-y-3">
-                {session.cost_estimate.parts.length > 0 && (
+          {(() => {
+            const activeCost =
+              (selectedCauseId
+                ? session.candidate_causes.find((c) => c.id === selectedCauseId)?.estimated_cost
+                : null) || session.cost_estimate;
+
+            if (!activeCost) return null;
+
+            return (
+              <div className="torq-card border-primary/20 shadow-md">
+                <div className="torq-card-header">
                   <div>
-                    <p className="text-xs font-medium text-surface-500 mb-2 uppercase tracking-wide">
-                      Parts
-                    </p>
-                    {session.cost_estimate.parts.map((part, i) => (
-                      <div key={i} className="flex justify-between items-center py-1.5">
-                        <div>
-                          <p className="text-xs text-dark">{part.description || part.part_number}</p>
-                          <p className="text-xs text-surface-500">
-                            {part.quantity}× {formatCurrency(part.price)}
-                          </p>
-                        </div>
-                        <span className="text-xs font-mono text-dark">
-                          {formatCurrency(part.line_total || part.price * part.quantity)}
-                        </span>
-                      </div>
-                    ))}
+                    <h3 className="font-semibold text-dark text-sm">Real-Time Cost Estimate</h3>
+                    {activeCost.cause_name && (
+                      <p className="text-xs text-primary font-medium mt-0.5">
+                        Target: {activeCost.cause_name}
+                      </p>
+                    )}
+                    {selectedCauseId && (
+                      <span className="inline-block text-[11px] text-surface-500 mt-0.5">
+                        (Viewing selected cause · click again to reset)
+                      </span>
+                    )}
                   </div>
-                )}
-                <div className="border-t border-surface-200 pt-3 space-y-1.5">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-surface-500">
-                      Labor ({session.cost_estimate.labor_hours}h × {formatCurrency(session.cost_estimate.labor_rate_per_hour)}/h)
-                    </span>
-                    <span className="font-mono text-dark">
-                      {formatCurrency(session.cost_estimate.labor_hours * session.cost_estimate.labor_rate_per_hour)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-surface-500">Consumables</span>
-                    <span className="font-mono text-dark">
-                      {formatCurrency(session.cost_estimate.consumables)}
-                    </span>
-                  </div>
+                  <div className="demo-badge">Live Estimate</div>
                 </div>
-                <div className="border-t-2 border-primary/20 pt-3 flex justify-between items-center">
-                  <span className="text-sm font-semibold text-dark">Total Estimate</span>
-                  <span className="text-lg font-bold text-primary">
-                    {formatCurrency(session.cost_estimate.total)}
-                  </span>
+                <div className="torq-card-body space-y-3">
+                  {activeCost.parts && activeCost.parts.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-surface-500 mb-2 uppercase tracking-wide">
+                        Parts
+                      </p>
+                      {activeCost.parts.map((part, i) => (
+                        <div key={i} className="flex justify-between items-center py-1.5 border-b border-surface-100 last:border-0">
+                          <div>
+                            <p className="text-xs font-medium text-dark">{part.description || part.part_number}</p>
+                            <p className="text-[11px] text-surface-500">
+                              {part.quantity}× {formatCurrency(part.price)} {part.part_number ? `(${part.part_number})` : ""}
+                            </p>
+                          </div>
+                          <span className="text-xs font-mono font-semibold text-dark">
+                            {formatCurrency(part.line_total || part.price * part.quantity)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="border-t border-surface-200 pt-3 space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-surface-500">
+                        Labor ({activeCost.labor_hours}h × {formatCurrency(activeCost.labor_rate_per_hour || 800)}/h)
+                      </span>
+                      <span className="font-mono text-dark">
+                        {formatCurrency((activeCost.labor_hours || 0) * (activeCost.labor_rate_per_hour || 800))}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-surface-500">Consumables & Shop Supplies</span>
+                      <span className="font-mono text-dark">
+                        {formatCurrency(activeCost.consumables || 0)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="border-t-2 border-primary/20 pt-3 flex justify-between items-center bg-primary-50/40 -mx-4 -mb-4 p-4 rounded-b-xl mt-2">
+                    <div>
+                      <span className="text-xs uppercase tracking-wider text-surface-500 font-semibold block">Total Estimate</span>
+                      <span className="text-[11px] text-surface-500">Includes parts & labor</span>
+                    </div>
+                    <span className="text-xl font-black text-primary font-mono">
+                      {formatCurrency(activeCost.total)}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Source Citations */}
           {session.citations.length > 0 && (

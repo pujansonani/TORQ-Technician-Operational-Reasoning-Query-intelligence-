@@ -25,24 +25,6 @@ class TestResultRequest(BaseModel):
 
 # ── Response sub-models ──────────────────────────────────────────────
 
-class CandidateCause(BaseModel):
-    """A single candidate root cause with its current probability."""
-    id: str
-    name: str
-    probability: float = Field(..., ge=0.0, le=1.0)
-    evidence: list[str] = Field(default_factory=list)
-    source_snippet: str = ""
-
-
-class RecommendedTest(BaseModel):
-    """The next diagnostic test the technician should perform."""
-    test_id: str
-    description: str
-    test_type: str  # "pass_fail" | "measurement"
-    discriminates_causes: list[str] = Field(default_factory=list)
-    reasoning: str = ""
-
-
 class CostEstimate(BaseModel):
     """Repair cost breakdown."""
     cause_id: str = ""
@@ -53,6 +35,25 @@ class CostEstimate(BaseModel):
     labor_rate_per_hour: float = 800.0  # INR default
     consumables: float = 0.0
     total: float = 0.0
+
+
+class CandidateCause(BaseModel):
+    """A single candidate root cause with its current probability."""
+    id: str
+    name: str
+    probability: float = Field(..., ge=0.0, le=1.0)
+    evidence: list[str] = Field(default_factory=list)
+    source_snippet: str = ""
+    estimated_cost: CostEstimate | None = None
+
+
+class RecommendedTest(BaseModel):
+    """The next diagnostic test the technician should perform."""
+    test_id: str
+    description: str
+    test_type: str  # "pass_fail" | "measurement"
+    discriminates_causes: list[str] = Field(default_factory=list)
+    reasoning: str = ""
 
 
 class SourceCitation(BaseModel):

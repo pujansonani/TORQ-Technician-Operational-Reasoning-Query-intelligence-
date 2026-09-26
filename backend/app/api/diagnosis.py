@@ -135,6 +135,8 @@ async def start_diagnosis(
 
     # Build candidate list
     candidates = engine.build_candidate_list(priors, dtc_entry)
+    for c in candidates:
+        c.estimated_cost = await cost_estimator.estimate(db, c.id, dtc_entry, truck_obj.model)
 
     # Get LLM summary (with TORQ-Lock validation)
     llm_summary = ""
@@ -354,6 +356,8 @@ async def submit_test_result(
 
     # Build response
     candidates = engine.build_candidate_list(updated_posteriors, dtc_entry)
+    for c in candidates:
+        c.estimated_cost = await cost_estimator.estimate(db, c.id, dtc_entry)
     evidence_log = _build_evidence_log(session.events)
 
     # Cost estimate for top cause
@@ -446,6 +450,9 @@ async def get_session(
     completed_test_ids = _get_completed_test_ids(session.events)
     completed_tests = _build_completed_tests(session.events)
     candidates = engine.build_candidate_list(posteriors, dtc_entry) if dtc_entry else []
+    if dtc_entry:
+        for c in candidates:
+            c.estimated_cost = await cost_estimator.estimate(db, c.id, dtc_entry)
     confidence = engine.confidence_score(posteriors) if posteriors else 0.0
     should_esc, _ = engine.should_escalate(posteriors) if posteriors else (False, "")
 

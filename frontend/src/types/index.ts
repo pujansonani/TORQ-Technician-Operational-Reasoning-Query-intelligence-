@@ -24,6 +24,7 @@ export interface CandidateCause {
   probability: number;
   evidence: string[];
   source_snippet: string;
+  estimated_cost?: CostEstimate;
 }
 
 export interface RecommendedTest {

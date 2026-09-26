@@ -19,11 +19,68 @@ export default function HomePage() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<DiagnoseFormValues>({
     resolver: zodResolver(diagnoseFormSchema),
     defaultValues: { truck_id: "", symptom_text: "", dtc_codes: "" },
   });
+
+  const selectedTruckId = watch("truck_id");
+
+  const sampleDtcList = [
+    {
+      code: "SPN-100-FMI-4",
+      desc: "Oil Pressure Low",
+      subsystem: "Lubrication",
+      symptom: "Oil pressure warning light illuminated on dashboard at idle. Pressure drops after engine warms up.",
+      costRange: "₹1.1k – ₹22.6k",
+    },
+    {
+      code: "SPN-110-FMI-0",
+      desc: "Coolant Temp High",
+      subsystem: "Cooling",
+      symptom: "Engine overheating after 20 minutes under load. Coolant temperature gauge reading above normal.",
+      costRange: "₹5.5k – ₹15.8k",
+    },
+    {
+      code: "SPN-190-FMI-0",
+      desc: "Engine Overspeed",
+      subsystem: "Controls",
+      symptom: "Engine surging at highway speed, RPM fluctuating intermittently, accelerator pedal feels erratic.",
+      costRange: "₹4.8k – ₹32.7k",
+    },
+    {
+      code: "SPN-520322-FMI-7",
+      desc: "SCR Low Efficiency",
+      subsystem: "Aftertreatment",
+      symptom: "DEF warning lamp illuminated with low SCR conversion efficiency. Excessive NOx emissions on test.",
+      costRange: "₹10.5k – ₹89.5k",
+    },
+    {
+      code: "SPN-91-FMI-4",
+      desc: "Pedal Voltage Low",
+      subsystem: "Pedal Sensor",
+      symptom: "Accelerator pedal position sensor fault, truck intermittently enters limp mode on cold start.",
+      costRange: "₹4.6k – ₹12.7k",
+    },
+    {
+      code: "SPN-3226-FMI-5",
+      desc: "DPF Pressure Low",
+      subsystem: "Exhaust DPF",
+      symptom: "DPF regeneration not completing automatically, high soot accumulation, differential pressure tube reading low.",
+      costRange: "₹1.3k – ₹131.3k",
+    },
+  ];
+
+  const handleSelectSampleDtc = (sample: typeof sampleDtcList[0]) => {
+    setValue("dtc_codes", sample.code);
+    setValue("symptom_text", sample.symptom);
+    if (!selectedTruckId && trucks.length > 0) {
+      setValue("truck_id", trucks[0].id);
+    }
+  };
 
   useEffect(() => {
     reset();
@@ -236,28 +293,34 @@ export default function HomePage() {
           {/* Supported DTCs */}
           <div className="torq-card">
             <div className="torq-card-header">
-              <h3 className="font-semibold text-dark text-sm">
-                Sample DTCs (Demo)
-              </h3>
+              <div>
+                <h3 className="font-semibold text-dark text-sm">
+                  Quick-Fill Fault Codes
+                </h3>
+                <p className="text-xs text-surface-500 mt-0.5">Click any DTC to test different repairs & costs</p>
+              </div>
             </div>
             <div className="torq-card-body space-y-2">
-              {[
-                { code: "SPN-100-FMI-4", desc: "Oil Pressure Low" },
-                { code: "SPN-110-FMI-0", desc: "Coolant Temp High" },
-                { code: "SPN-190-FMI-0", desc: "Engine Overspeed" },
-                { code: "SPN-520322-FMI-7", desc: "SCR Efficiency" },
-                { code: "SPN-91-FMI-4", desc: "Pedal Voltage Low" },
-                { code: "SPN-3226-FMI-5", desc: "DPF Pressure Low" },
-              ].map((dtc) => (
-                <div
+              {sampleDtcList.map((dtc) => (
+                <button
+                  type="button"
                   key={dtc.code}
-                  className="flex items-center justify-between px-3 py-2 rounded-md bg-surface-100 hover:bg-surface-200 transition-colors cursor-default"
+                  onClick={() => handleSelectSampleDtc(dtc)}
+                  className="w-full text-left p-2.5 rounded-lg border border-surface-200 bg-surface-50 hover:bg-primary-50 hover:border-primary/40 transition-all group"
                 >
-                  <code className="text-xs font-mono text-primary font-medium">
-                    {dtc.code}
-                  </code>
-                  <span className="text-xs text-surface-500">{dtc.desc}</span>
-                </div>
+                  <div className="flex items-center justify-between mb-1">
+                    <code className="text-xs font-mono font-bold text-primary group-hover:text-primary-700">
+                      {dtc.code}
+                    </code>
+                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                      {dtc.costRange}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-surface-500">
+                    <span className="font-medium text-dark">{dtc.desc}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-surface-400">{dtc.subsystem}</span>
+                  </div>
+                </button>
               ))}
             </div>
           </div>
