@@ -1,0 +1,89 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL ─────────────────────────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: torq
+      POSTGRES_PASSWORD: torq_dev_password
+      POSTGRES_DB: torq
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U torq"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Backend ────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://torq:torq_dev_password@db:5432/torq
+      - LLM_PROVIDER=${LLM_PROVIDER:-groq}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-20250514}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+      - CHROMA_PERSIST_DIR=/app/chroma_data
+      - CORS_ORIGINS=http://localhost:3000
+      - DEBUG=false
+    volumes:
+      - ./backend:/app
+      - chroma_data:/app/chroma_data
+      - model_cache:/root/.cache
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── Seed Data Loader ───────────────────────────────────────────────
+  seed:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: python -m seed.seed_all
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://torq:torq_dev_password@db:5432/torq
+      - CHROMA_PERSIST_DIR=/app/chroma_data
+      - LLM_PROVIDER=groq
+      - GROQ_API_KEY=${GROQ_API_KEY:-placeholder}
+    volumes:
+      - ./backend:/app
+      - chroma_data:/app/chroma_data
+      - model_cache:/root/.cache
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── Next.js Frontend ───────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  chroma_data:
+  model_cache:

@@ -1,0 +1,251 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
+import { fetchReport, fetchSession } from "@/lib/api";
+import { formatCurrency } from "@/lib/utils";
+import type { SessionState } from "@/types";
+
+export default function ReportPage() {
+  const params = useParams();
+  const sessionId = params.sessionId as string;
+  const [markdown, setMarkdown] = useState("");
+  const [session, setSession] = useState<SessionState | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const reportRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    Promise.all([fetchReport(sessionId), fetchSession(sessionId)])
+      .then(([md, sess]) => {
+        setMarkdown(md);
+        setSession(sess);
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [sessionId]);
+
+  const downloadMarkdown = () => {
+    const blob = new Blob([markdown], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `torq-report-${sessionId.slice(0, 8)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadPDF = async () => {
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 15;
+      const maxWidth = pageWidth - margin * 2;
+      let y = 20;
+
+      // Title
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 90, 156); // Primary color
+      doc.text("TORQ Diagnostic Report", margin, y);
+      y += 10;
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Session: ${sessionId}`, margin, y);
+      y += 5;
+      doc.text(`Generated: ${new Date().toISOString().split("T")[0]}`, margin, y);
+      y += 10;
+
+      // Separator
+      doc.setDrawColor(0, 90, 156);
+      doc.setLineWidth(0.5);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 8;
+
+      if (session) {
+        // Vehicle Info
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(30, 30, 30);
+        doc.text("Vehicle Information", margin, y);
+        y += 7;
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        const dtcText = session.dtc_codes.join(", ");
+        const lines = [
+          `DTC Codes: ${dtcText}`,
+          `Symptom: ${session.symptom_text}`,
+        ];
+        lines.forEach((line) => {
+          const split = doc.splitTextToSize(line, maxWidth);
+          doc.text(split, margin, y);
+          y += split.length * 5 + 2;
+        });
+        y += 5;
+
+        // Root Cause
+        if (session.root_cause) {
+          doc.setFontSize(12);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(16, 185, 129); // Success color
+          doc.text("Root Cause Confirmed", margin, y);
+          y += 7;
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(30, 30, 30);
+          doc.text(session.root_cause, margin, y);
+          y += 5;
+          doc.text(
+            `Confidence: ${session.confidence_score.toFixed(1)}%`,
+            margin,
+            y
+          );
+          y += 10;
+        }
+
+        // Cost Estimate
+        if (session.cost_estimate) {
+          doc.setFontSize(12);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(30, 30, 30);
+          doc.text("Cost Estimate", margin, y);
+          y += 7;
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "normal");
+          doc.text(
+            `Total: ${formatCurrency(session.cost_estimate.total)}`,
+            margin,
+            y
+          );
+          y += 5;
+          doc.text(
+            `Labor: ${session.cost_estimate.labor_hours}h × ${formatCurrency(session.cost_estimate.labor_rate_per_hour)}/h`,
+            margin,
+            y
+          );
+          y += 10;
+        }
+
+        // Tests Performed
+        if (session.completed_tests.length > 0) {
+          doc.setFontSize(12);
+          doc.setFont("helvetica", "bold");
+          doc.text("Tests Performed", margin, y);
+          y += 7;
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "normal");
+          session.completed_tests.forEach((test, i) => {
+            if (y > 270) {
+              doc.addPage();
+              y = 20;
+            }
+            doc.text(
+              `${i + 1}. ${test.test_id}: ${test.result}${test.notes ? ` (${test.notes})` : ""}`,
+              margin,
+              y
+            );
+            y += 5;
+          });
+        }
+      }
+
+      // Footer
+      y = doc.internal.pageSize.getHeight() - 15;
+      doc.setFontSize(7);
+      doc.setTextColor(150, 150, 150);
+      doc.text(
+        "Generated by TORQ AI Diagnostic Copilot — Demo data, verify specs against manufacturer documentation",
+        margin,
+        y
+      );
+
+      doc.save(`torq-report-${sessionId.slice(0, 8)}.pdf`);
+    } catch (e) {
+      console.error("PDF generation failed:", e);
+      alert("PDF generation failed. Please use Markdown export.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <svg className="animate-spin h-10 w-10 mx-auto text-primary mb-4" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <p className="text-surface-500">Generating report...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-2 h-8 rounded-full bg-gradient-to-b from-primary to-accent" />
+            <h1 className="text-2xl font-bold text-dark">Session Report</h1>
+          </div>
+          <p className="text-xs text-surface-500 ml-5 font-mono">
+            Session: {sessionId.slice(0, 8)}...
+          </p>
+        </div>
+        <div className="flex gap-3 no-print">
+          <a
+            href={`/workflow/${sessionId}`}
+            className="px-4 py-2 rounded-lg border border-surface-300 text-sm font-medium
+                       text-dark hover:bg-surface-200 transition-colors"
+          >
+            ← Back to Workflow
+          </a>
+          <button
+            onClick={downloadMarkdown}
+            className="px-4 py-2 rounded-lg border border-surface-300 text-sm font-medium
+                       text-dark hover:bg-surface-200 transition-colors flex items-center gap-2"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Markdown
+          </button>
+          <button
+            onClick={downloadPDF}
+            className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold
+                       hover:bg-primary-700 transition-colors flex items-center gap-2"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            PDF
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="rounded-lg border border-accent/20 bg-accent-50 p-4 mb-6">
+          <p className="text-sm text-accent-800">{error}</p>
+        </div>
+      )}
+
+      {/* Report Content */}
+      <div className="torq-card" ref={reportRef}>
+        <div className="torq-card-body">
+          <pre className="whitespace-pre-wrap text-sm text-dark leading-relaxed font-sans">
+            {markdown}
+          </pre>
+        </div>
+      </div>
+    </div>
+  );
+}

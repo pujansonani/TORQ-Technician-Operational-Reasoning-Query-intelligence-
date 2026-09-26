@@ -1,0 +1,521 @@
+[
+  {
+    "code": "SPN-100-FMI-4",
+    "description": "Engine Oil Pressure — Voltage Below Normal",
+    "subsystem": "Engine Lubrication",
+    "severity": 4,
+    "possible_causes": [
+      {
+        "id": "oil_pressure_sensor",
+        "name": "Faulty Oil Pressure Sensor",
+        "base_rate": 0.35,
+        "symptom_keywords": ["sensor", "reading", "erratic", "intermittent", "gauge", "warning light"],
+        "verified_specs": {"voltage_v": 0.5, "resistance_ohm": 240},
+        "required_parts": [{"part_number": "PKR-OPS-2201", "quantity": 1}],
+        "estimated_labor_hours": 0.5,
+        "description": "Oil pressure sensor failure causing incorrect readings"
+      },
+      {
+        "id": "oil_pump_wear",
+        "name": "Worn Oil Pump",
+        "base_rate": 0.25,
+        "symptom_keywords": ["low pressure", "noise", "knocking", "bearing", "ticking", "startup"],
+        "verified_specs": {"pressure_kpa": 350, "flow_lpm": 45},
+        "required_parts": [{"part_number": "PKR-OPM-3301", "quantity": 1}],
+        "estimated_labor_hours": 4.0,
+        "description": "Internal gear wear in oil pump reducing flow and pressure"
+      },
+      {
+        "id": "oil_filter_clog",
+        "name": "Clogged Oil Filter / Bypass Valve Stuck",
+        "base_rate": 0.20,
+        "symptom_keywords": ["filter", "dirty", "overdue", "maintenance", "bypass", "contamination"],
+        "verified_specs": {"pressure_drop_kpa": 35},
+        "required_parts": [{"part_number": "PKR-OFL-1101", "quantity": 1}],
+        "estimated_labor_hours": 0.5,
+        "description": "Oil filter restriction exceeding bypass valve cracking pressure"
+      },
+      {
+        "id": "wiring_harness",
+        "name": "Damaged Wiring Harness to Sensor",
+        "base_rate": 0.15,
+        "symptom_keywords": ["wire", "connector", "corrosion", "chafed", "intermittent", "vibration"],
+        "verified_specs": {"voltage_v": 5.0},
+        "required_parts": [{"part_number": "PKR-WRH-4401", "quantity": 1}],
+        "estimated_labor_hours": 1.5,
+        "description": "Wiring damage between ECM and oil pressure sensor"
+      },
+      {
+        "id": "low_oil_level",
+        "name": "Low Engine Oil Level",
+        "base_rate": 0.05,
+        "symptom_keywords": ["low", "leak", "consumption", "dipstick", "smoke", "burning"],
+        "verified_specs": {},
+        "required_parts": [{"part_number": "PKR-EOL-5501", "quantity": 10}],
+        "estimated_labor_hours": 0.25,
+        "description": "Insufficient oil volume in the engine"
+      }
+    ],
+    "diagnostic_steps": [
+      {
+        "id": "test_oil_level",
+        "description": "Check engine oil level on dipstick — is it between MIN and MAX marks?",
+        "type": "pass_fail",
+        "discriminates": ["low_oil_level", "oil_pump_wear"],
+        "expected_if_cause": {"low_oil_level": "fail", "oil_pump_wear": "pass"}
+      },
+      {
+        "id": "test_sensor_voltage",
+        "description": "Measure voltage at oil pressure sensor connector (key ON, engine OFF). Expected: 4.5-5.5V reference",
+        "type": "measurement",
+        "discriminates": ["oil_pressure_sensor", "wiring_harness"],
+        "expected_if_cause": {"oil_pressure_sensor": "fail", "wiring_harness": "fail"}
+      },
+      {
+        "id": "test_mechanical_gauge",
+        "description": "Install a mechanical oil pressure gauge at the port. Start engine, read at idle. Expected: ≥ 280 kPa at idle",
+        "type": "measurement",
+        "discriminates": ["oil_pressure_sensor", "oil_pump_wear", "oil_filter_clog"],
+        "expected_if_cause": {"oil_pressure_sensor": "pass", "oil_pump_wear": "fail", "oil_filter_clog": "fail"}
+      },
+      {
+        "id": "test_filter_dp",
+        "description": "Check oil filter differential pressure or inspect filter element condition",
+        "type": "pass_fail",
+        "discriminates": ["oil_filter_clog"],
+        "expected_if_cause": {"oil_filter_clog": "fail"}
+      },
+      {
+        "id": "test_wiring_continuity",
+        "description": "Check wiring continuity and connector condition between ECM pin and sensor",
+        "type": "pass_fail",
+        "discriminates": ["wiring_harness", "oil_pressure_sensor"],
+        "expected_if_cause": {"wiring_harness": "fail", "oil_pressure_sensor": "pass"}
+      }
+    ]
+  },
+  {
+    "code": "SPN-110-FMI-0",
+    "description": "Engine Coolant Temperature — Data Valid But Above Normal",
+    "subsystem": "Engine Cooling",
+    "severity": 4,
+    "possible_causes": [
+      {
+        "id": "thermostat_stuck",
+        "name": "Thermostat Stuck Closed",
+        "base_rate": 0.30,
+        "symptom_keywords": ["overheat", "temperature", "gauge", "high", "coolant", "hot"],
+        "verified_specs": {"opening_temp_c": 82},
+        "required_parts": [{"part_number": "PKR-THR-2202", "quantity": 1}],
+        "estimated_labor_hours": 1.5,
+        "description": "Thermostat fails closed preventing coolant flow to radiator"
+      },
+      {
+        "id": "coolant_low",
+        "name": "Low Coolant Level / Leak",
+        "base_rate": 0.25,
+        "symptom_keywords": ["leak", "low", "puddle", "overflow", "reservoir", "hose"],
+        "verified_specs": {},
+        "required_parts": [{"part_number": "PKR-CLT-6601", "quantity": 20}],
+        "estimated_labor_hours": 0.5,
+        "description": "Insufficient coolant due to external or internal leak"
+      },
+      {
+        "id": "water_pump_fail",
+        "name": "Water Pump Failure",
+        "base_rate": 0.20,
+        "symptom_keywords": ["pump", "bearing", "noise", "weep", "seal", "whine"],
+        "verified_specs": {"flow_lpm": 200},
+        "required_parts": [{"part_number": "PKR-WPM-3302", "quantity": 1}],
+        "estimated_labor_hours": 3.0,
+        "description": "Water pump impeller or bearing failure reducing flow"
+      },
+      {
+        "id": "fan_clutch",
+        "name": "Fan Clutch Not Engaging",
+        "base_rate": 0.15,
+        "symptom_keywords": ["fan", "clutch", "idle", "low speed", "air flow", "stationary"],
+        "verified_specs": {},
+        "required_parts": [{"part_number": "PKR-FNC-7701", "quantity": 1}],
+        "estimated_labor_hours": 2.0,
+        "description": "Viscous or electronic fan clutch not engaging at proper temperature"
+      },
+      {
+        "id": "ect_sensor",
+        "name": "Faulty ECT Sensor",
+        "base_rate": 0.10,
+        "symptom_keywords": ["sensor", "reading", "false", "erratic", "gauge wrong"],
+        "verified_specs": {"resistance_ohm": 2200},
+        "required_parts": [{"part_number": "PKR-ECT-1102", "quantity": 1}],
+        "estimated_labor_hours": 0.5,
+        "description": "Temperature sensor providing inaccurate readings"
+      }
+    ],
+    "diagnostic_steps": [
+      {
+        "id": "test_coolant_level",
+        "description": "Check coolant level in expansion tank and radiator (engine cold). Is it at the FULL mark?",
+        "type": "pass_fail",
+        "discriminates": ["coolant_low"],
+        "expected_if_cause": {"coolant_low": "fail"}
+      },
+      {
+        "id": "test_ect_resistance",
+        "description": "Disconnect ECT sensor and measure resistance. At 20°C expect ~2200Ω, at 80°C expect ~300Ω",
+        "type": "measurement",
+        "discriminates": ["ect_sensor"],
+        "expected_if_cause": {"ect_sensor": "fail"}
+      },
+      {
+        "id": "test_thermostat",
+        "description": "Start cold engine, feel upper radiator hose. Should get hot within 5-7 min as thermostat opens",
+        "type": "pass_fail",
+        "discriminates": ["thermostat_stuck", "water_pump_fail"],
+        "expected_if_cause": {"thermostat_stuck": "fail", "water_pump_fail": "fail"}
+      },
+      {
+        "id": "test_fan_engagement",
+        "description": "Run engine until temperature reaches 95°C. Does the fan engage and increase speed?",
+        "type": "pass_fail",
+        "discriminates": ["fan_clutch"],
+        "expected_if_cause": {"fan_clutch": "fail"}
+      },
+      {
+        "id": "test_water_pump_flow",
+        "description": "With radiator cap removed and engine running, observe coolant flow in radiator neck",
+        "type": "pass_fail",
+        "discriminates": ["water_pump_fail", "thermostat_stuck"],
+        "expected_if_cause": {"water_pump_fail": "fail", "thermostat_stuck": "pass"}
+      }
+    ]
+  },
+  {
+    "code": "SPN-190-FMI-0",
+    "description": "Engine Speed — Data Valid But Above Normal (Overspeed)",
+    "subsystem": "Engine Controls",
+    "severity": 5,
+    "possible_causes": [
+      {
+        "id": "throttle_sensor",
+        "name": "Faulty Throttle Position Sensor",
+        "base_rate": 0.30,
+        "symptom_keywords": ["throttle", "accelerator", "pedal", "stuck", "erratic", "surging"],
+        "verified_specs": {"voltage_v": 0.8},
+        "required_parts": [{"part_number": "PKR-TPS-2203", "quantity": 1}],
+        "estimated_labor_hours": 1.0,
+        "description": "TPS sending incorrect position signal causing unintended acceleration"
+      },
+      {
+        "id": "turbo_actuator",
+        "name": "VGT Actuator Stuck Open",
+        "base_rate": 0.25,
+        "symptom_keywords": ["turbo", "boost", "power", "smoke", "wastegate", "actuator"],
+        "verified_specs": {"boost_kpa": 250},
+        "required_parts": [{"part_number": "PKR-VGT-3303", "quantity": 1}],
+        "estimated_labor_hours": 3.5,
+        "description": "Variable geometry turbo actuator failing to regulate boost"
+      },
+      {
+        "id": "speed_sensor",
+        "name": "Engine Speed Sensor Malfunction",
+        "base_rate": 0.25,
+        "symptom_keywords": ["sensor", "rpm", "reading", "tachometer", "signal", "intermittent"],
+        "verified_specs": {"gap_mm": 1.0},
+        "required_parts": [{"part_number": "PKR-ESS-1103", "quantity": 1}],
+        "estimated_labor_hours": 1.0,
+        "description": "Crankshaft position sensor providing erratic speed signal"
+      },
+      {
+        "id": "ecm_calibration",
+        "name": "ECM Calibration / Software Issue",
+        "base_rate": 0.20,
+        "symptom_keywords": ["software", "update", "flash", "calibration", "reprogram", "version"],
+        "verified_specs": {},
+        "required_parts": [],
+        "estimated_labor_hours": 1.0,
+        "description": "ECM requires software update or recalibration"
+      }
+    ],
+    "diagnostic_steps": [
+      {
+        "id": "test_tps_voltage",
+        "description": "Measure TPS voltage at idle (expect 0.5-0.8V) and full throttle (expect 4.0-4.5V)",
+        "type": "measurement",
+        "discriminates": ["throttle_sensor"],
+        "expected_if_cause": {"throttle_sensor": "fail"}
+      },
+      {
+        "id": "test_speed_sensor_signal",
+        "description": "Check engine speed sensor signal with oscilloscope. Should show clean square wave",
+        "type": "pass_fail",
+        "discriminates": ["speed_sensor"],
+        "expected_if_cause": {"speed_sensor": "fail"}
+      },
+      {
+        "id": "test_turbo_actuator",
+        "description": "Command VGT actuator through full range using diagnostic tool. Should move smoothly 0-100%",
+        "type": "pass_fail",
+        "discriminates": ["turbo_actuator"],
+        "expected_if_cause": {"turbo_actuator": "fail"}
+      },
+      {
+        "id": "test_ecm_version",
+        "description": "Read ECM software version and compare against latest available calibration",
+        "type": "pass_fail",
+        "discriminates": ["ecm_calibration"],
+        "expected_if_cause": {"ecm_calibration": "fail"}
+      }
+    ]
+  },
+  {
+    "code": "SPN-520322-FMI-7",
+    "description": "Aftertreatment SCR Catalyst Conversion Efficiency — Mechanical System Not Responding",
+    "subsystem": "Aftertreatment / Emissions",
+    "severity": 3,
+    "possible_causes": [
+      {
+        "id": "def_quality",
+        "name": "Poor DEF Quality / Contaminated DEF",
+        "base_rate": 0.30,
+        "symptom_keywords": ["DEF", "urea", "quality", "concentration", "contaminated", "frozen", "crystallized"],
+        "verified_specs": {"concentration_pct": 32.5},
+        "required_parts": [{"part_number": "PKR-DEF-8801", "quantity": 20}],
+        "estimated_labor_hours": 1.0,
+        "description": "DEF solution not meeting ISO 22241 specification (32.5% urea)"
+      },
+      {
+        "id": "def_injector",
+        "name": "DEF Injector Clogged / Failed",
+        "base_rate": 0.25,
+        "symptom_keywords": ["injector", "spray", "clogged", "nozzle", "dosing", "crystallization"],
+        "verified_specs": {},
+        "required_parts": [{"part_number": "PKR-DFI-3304", "quantity": 1}],
+        "estimated_labor_hours": 2.0,
+        "description": "DEF dosing injector blocked by crystallized urea deposits"
+      },
+      {
+        "id": "nox_sensor",
+        "name": "NOx Sensor Failure (Downstream)",
+        "base_rate": 0.20,
+        "symptom_keywords": ["NOx", "sensor", "reading", "downstream", "output", "signal"],
+        "verified_specs": {"nox_ppm": 50},
+        "required_parts": [{"part_number": "PKR-NOX-1104", "quantity": 1}],
+        "estimated_labor_hours": 1.0,
+        "description": "Downstream NOx sensor reporting incorrect conversion values"
+      },
+      {
+        "id": "scr_catalyst_aged",
+        "name": "SCR Catalyst Aging / Poisoned",
+        "base_rate": 0.15,
+        "symptom_keywords": ["catalyst", "aged", "poisoned", "sulfur", "high mileage", "efficiency"],
+        "verified_specs": {},
+        "required_parts": [{"part_number": "PKR-SCR-9901", "quantity": 1}],
+        "estimated_labor_hours": 5.0,
+        "description": "SCR catalyst degraded beyond usable conversion efficiency"
+      },
+      {
+        "id": "exhaust_leak",
+        "name": "Exhaust Leak Before SCR",
+        "base_rate": 0.10,
+        "symptom_keywords": ["exhaust", "leak", "gasket", "crack", "clamp", "noise"],
+        "verified_specs": {},
+        "required_parts": [{"part_number": "PKR-EXG-4402", "quantity": 2}],
+        "estimated_labor_hours": 1.5,
+        "description": "Exhaust gas leak diluting DEF spray or admitting ambient air"
+      }
+    ],
+    "diagnostic_steps": [
+      {
+        "id": "test_def_quality",
+        "description": "Use refractometer to test DEF concentration. Should read 32.5% ± 1.5% urea",
+        "type": "measurement",
+        "discriminates": ["def_quality"],
+        "expected_if_cause": {"def_quality": "fail"}
+      },
+      {
+        "id": "test_nox_sensor",
+        "description": "Compare upstream and downstream NOx sensor readings at steady cruise. Downstream should be < 20% of upstream",
+        "type": "measurement",
+        "discriminates": ["nox_sensor", "scr_catalyst_aged", "def_injector"],
+        "expected_if_cause": {"nox_sensor": "fail", "scr_catalyst_aged": "fail", "def_injector": "fail"}
+      },
+      {
+        "id": "test_def_injector",
+        "description": "Command DEF injector on via diagnostic tool and verify spray pattern. Should produce fine mist",
+        "type": "pass_fail",
+        "discriminates": ["def_injector"],
+        "expected_if_cause": {"def_injector": "fail"}
+      },
+      {
+        "id": "test_exhaust_visual",
+        "description": "Visually inspect exhaust piping from turbo to SCR for cracks, loose clamps, or soot trails",
+        "type": "pass_fail",
+        "discriminates": ["exhaust_leak"],
+        "expected_if_cause": {"exhaust_leak": "fail"}
+      },
+      {
+        "id": "test_scr_temp",
+        "description": "Check SCR inlet temperature during DPF regen. Should reach 350-550°C for effective conversion",
+        "type": "measurement",
+        "discriminates": ["scr_catalyst_aged", "def_quality"],
+        "expected_if_cause": {"scr_catalyst_aged": "fail", "def_quality": "pass"}
+      }
+    ]
+  },
+  {
+    "code": "SPN-91-FMI-4",
+    "description": "Accelerator Pedal Position — Voltage Below Normal",
+    "subsystem": "Driver Controls",
+    "severity": 3,
+    "possible_causes": [
+      {
+        "id": "pedal_sensor_a",
+        "name": "Accelerator Pedal Sensor A Failure",
+        "base_rate": 0.35,
+        "symptom_keywords": ["pedal", "accelerator", "throttle", "limp", "no response", "dead pedal"],
+        "verified_specs": {"voltage_v": 0.8},
+        "required_parts": [{"part_number": "PKR-APS-2204", "quantity": 1}],
+        "estimated_labor_hours": 1.0,
+        "description": "Primary accelerator position sensor failed or out of range"
+      },
+      {
+        "id": "pedal_wiring",
+        "name": "Wiring Issue — Pedal to ECM",
+        "base_rate": 0.30,
+        "symptom_keywords": ["wire", "connector", "chafed", "corrosion", "short", "intermittent"],
+        "verified_specs": {"voltage_v": 5.0},
+        "required_parts": [{"part_number": "PKR-WRH-4403", "quantity": 1}],
+        "estimated_labor_hours": 2.0,
+        "description": "Wiring harness damage between pedal assembly and ECM"
+      },
+      {
+        "id": "ecm_input",
+        "name": "ECM Input Channel Fault",
+        "base_rate": 0.20,
+        "symptom_keywords": ["ECM", "controller", "input", "channel", "pin", "circuit"],
+        "verified_specs": {},
+        "required_parts": [],
+        "estimated_labor_hours": 1.0,
+        "description": "ECM analog input channel degraded — requires dealer diagnostic"
+      },
+      {
+        "id": "pedal_mechanical",
+        "name": "Mechanical Pedal Assembly Wear",
+        "base_rate": 0.15,
+        "symptom_keywords": ["mechanical", "spring", "pivot", "binding", "stuck", "return"],
+        "verified_specs": {},
+        "required_parts": [{"part_number": "PKR-PDA-5502", "quantity": 1}],
+        "estimated_labor_hours": 1.5,
+        "description": "Physical wear or binding in pedal mechanism"
+      }
+    ],
+    "diagnostic_steps": [
+      {
+        "id": "test_pedal_voltage",
+        "description": "Measure voltage at pedal sensor connector — idle (0.5-0.8V) and full travel (4.0-4.5V)",
+        "type": "measurement",
+        "discriminates": ["pedal_sensor_a", "pedal_wiring"],
+        "expected_if_cause": {"pedal_sensor_a": "fail", "pedal_wiring": "fail"}
+      },
+      {
+        "id": "test_pedal_sweep",
+        "description": "Slowly sweep pedal from 0-100% while monitoring live data. Signal should be smooth and linear",
+        "type": "pass_fail",
+        "discriminates": ["pedal_sensor_a", "pedal_mechanical"],
+        "expected_if_cause": {"pedal_sensor_a": "fail", "pedal_mechanical": "fail"}
+      },
+      {
+        "id": "test_ecm_pin_voltage",
+        "description": "Backprobe ECM connector — measure signal at the ECM side while actuating pedal",
+        "type": "measurement",
+        "discriminates": ["pedal_wiring", "ecm_input"],
+        "expected_if_cause": {"pedal_wiring": "fail", "ecm_input": "fail"}
+      },
+      {
+        "id": "test_substitute_pedal",
+        "description": "Temporarily install a known-good pedal assembly and check if fault clears",
+        "type": "pass_fail",
+        "discriminates": ["pedal_sensor_a", "pedal_mechanical"],
+        "expected_if_cause": {"pedal_sensor_a": "pass", "pedal_mechanical": "pass"}
+      }
+    ]
+  },
+  {
+    "code": "SPN-3226-FMI-5",
+    "description": "Aftertreatment DPF Differential Pressure — Current Below Normal",
+    "subsystem": "Aftertreatment / DPF",
+    "severity": 3,
+    "possible_causes": [
+      {
+        "id": "dpf_sensor",
+        "name": "DPF Differential Pressure Sensor Failed",
+        "base_rate": 0.35,
+        "symptom_keywords": ["sensor", "pressure", "differential", "reading", "zero", "stuck"],
+        "verified_specs": {"pressure_kpa": 8},
+        "required_parts": [{"part_number": "PKR-DPS-2205", "quantity": 1}],
+        "estimated_labor_hours": 0.75,
+        "description": "Differential pressure sensor providing incorrect soot load readings"
+      },
+      {
+        "id": "dpf_tubes_blocked",
+        "name": "Pressure Sensing Tubes Blocked",
+        "base_rate": 0.30,
+        "symptom_keywords": ["tube", "line", "blocked", "soot", "clogged", "fitting"],
+        "verified_specs": {},
+        "required_parts": [{"part_number": "PKR-DPT-4404", "quantity": 2}],
+        "estimated_labor_hours": 1.0,
+        "description": "Small-bore sensing tubes to DPF clogged with soot or moisture"
+      },
+      {
+        "id": "dpf_wiring",
+        "name": "Wiring / Connector Issue at Sensor",
+        "base_rate": 0.20,
+        "symptom_keywords": ["wire", "connector", "corrosion", "water", "harness"],
+        "verified_specs": {"voltage_v": 5.0},
+        "required_parts": [{"part_number": "PKR-WRH-4405", "quantity": 1}],
+        "estimated_labor_hours": 1.5,
+        "description": "Wiring or connector corrosion at the DPF differential pressure sensor"
+      },
+      {
+        "id": "dpf_cracked",
+        "name": "DPF Substrate Cracked",
+        "base_rate": 0.15,
+        "symptom_keywords": ["crack", "rattle", "ash", "low backpressure", "broken", "substrate"],
+        "verified_specs": {},
+        "required_parts": [{"part_number": "PKR-DPF-9902", "quantity": 1}],
+        "estimated_labor_hours": 6.0,
+        "description": "Physical damage to DPF ceramic substrate allowing exhaust bypass"
+      }
+    ],
+    "diagnostic_steps": [
+      {
+        "id": "test_sensor_reading",
+        "description": "Read DPF differential pressure on live data. At idle, expect 2-5 kPa. At cruise, 5-15 kPa",
+        "type": "measurement",
+        "discriminates": ["dpf_sensor", "dpf_tubes_blocked"],
+        "expected_if_cause": {"dpf_sensor": "fail", "dpf_tubes_blocked": "fail"}
+      },
+      {
+        "id": "test_tubes_blow",
+        "description": "Disconnect sensing tubes and blow through with compressed air. Should flow freely",
+        "type": "pass_fail",
+        "discriminates": ["dpf_tubes_blocked"],
+        "expected_if_cause": {"dpf_tubes_blocked": "fail"}
+      },
+      {
+        "id": "test_sensor_voltage_ref",
+        "description": "Check 5V reference and ground at sensor connector with key ON engine OFF",
+        "type": "measurement",
+        "discriminates": ["dpf_sensor", "dpf_wiring"],
+        "expected_if_cause": {"dpf_sensor": "fail", "dpf_wiring": "fail"}
+      },
+      {
+        "id": "test_dpf_visual",
+        "description": "Remove DPF sensor port plug and visually inspect substrate for cracks using borescope",
+        "type": "pass_fail",
+        "discriminates": ["dpf_cracked"],
+        "expected_if_cause": {"dpf_cracked": "fail"}
+      }
+    ]
+  }
+]

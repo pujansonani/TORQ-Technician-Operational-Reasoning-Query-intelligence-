@@ -1,0 +1,8 @@
+[
+  {"vin": "1XKAD49X1NJ123456", "brand": "Kenworth", "model": "T680", "year": 2022, "engine": "PACCAR MX-13", "mileage_km": 245000},
+  {"vin": "1XKAD49X1NJ234567", "brand": "Kenworth", "model": "T880", "year": 2021, "engine": "PACCAR MX-13", "mileage_km": 380000},
+  {"vin": "2NPLHD7X1MT345678", "brand": "Peterbilt", "model": "579", "year": 2023, "engine": "PACCAR MX-13", "mileage_km": 125000},
+  {"vin": "2NPLHD7X1MT456789", "brand": "Peterbilt", "model": "389", "year": 2020, "engine": "PACCAR MX-13", "mileage_km": 510000},
+  {"vin": "1XKAD49X1NJ567890", "brand": "Kenworth", "model": "T680", "year": 2024, "engine": "PACCAR MX-13", "mileage_km": 45000},
+  {"vin": "3AKJHHDR5NS678901", "brand": "Peterbilt", "model": "579", "year": 2022, "engine": "PACCAR MX-11", "mileage_km": 210000}
+]
