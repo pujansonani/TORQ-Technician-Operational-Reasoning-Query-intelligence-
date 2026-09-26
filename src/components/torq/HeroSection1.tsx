@@ -8,7 +8,7 @@ import { PillButton } from "./PillButton";
 
 export const HeroSection1: React.FC = () => {
   return (
-    <section className="relative w-full bg-[#DCE7DE] pt-24 sm:pt-28 pb-8 md:pb-12 overflow-hidden before:content-[''] before:absolute before:inset-x-0 before:bottom-full before:h-[300px] before:bg-[#DCE7DE]">
+    <section className="relative w-full bg-[#DCE7DE] pt-24 sm:pt-28 pb-14 sm:pb-20 overflow-hidden before:content-[''] before:absolute before:inset-x-0 before:bottom-full before:h-[300px] before:bg-[#DCE7DE]">
       
       {/* Faint Abstract Line Background */}
       <div className="absolute inset-0 pointer-events-none opacity-30">
@@ -26,7 +26,7 @@ export const HeroSection1: React.FC = () => {
         </svg>
       </div>
 
-      <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6">
+      <div className="relative z-20 max-w-[1280px] mx-auto px-4 sm:px-6">
         
         {/* UNFRAMED FULL-BLEED ILLUSTRATION CONTAINER (Soft 20px radius, no nested browser frame) */}
         <div className="relative w-full rounded-[20px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
@@ -177,6 +177,9 @@ export const HeroSection1: React.FC = () => {
         </div>
 
       </div>
+
+      {/* SEAMLESS GRADIENT BLEND TO WHITE (Merges Hero 1 pastel mint into Hero 2 white with zero hard cut) */}
+      <div className="absolute inset-x-0 bottom-0 h-44 sm:h-64 bg-gradient-to-b from-transparent via-[#DCE7DE]/30 to-white pointer-events-none z-10" />
     </section>
   );
 };

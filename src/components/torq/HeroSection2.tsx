@@ -10,7 +10,7 @@ export const HeroSection2: React.FC = () => {
   const [showSupportModal, setShowSupportModal] = useState(false);
 
   return (
-    <section className="relative w-full bg-white py-20 lg:py-28 overflow-hidden">
+    <section className="relative w-full bg-white pt-12 sm:pt-16 pb-20 lg:pb-28 overflow-hidden">
       
       {/* THIN SPARSE RED CURVED LINE-ART DOODLES (Rerouted & placed behind content so it NEVER crosses through stats) */}
       <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
