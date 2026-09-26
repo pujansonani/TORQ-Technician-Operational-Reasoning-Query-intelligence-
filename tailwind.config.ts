@@ -9,6 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        emons: {
+          red: "#E5402C",
+          redHover: "#CF3722",
+          ink: "#1A1A1A",
+          body: "#6E6E6E",
+          muted: "#9A9A9A",
+          soft: "#F6F6F5",
+          pillOutline: "#F6C9BE",
+          pillOutlineDark: "#F2A28E",
+          mint: "#B7CEC1",
+          mint2: "#DCE7DE",
+          tealDark: "#7C9C8C",
+        },
         paccar: {
           blue: "#005A9C",
           deep: "#003B64",

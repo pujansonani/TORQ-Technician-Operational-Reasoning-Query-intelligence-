@@ -3,8 +3,23 @@
 @tailwind utilities;
 
 :root {
-  --background: #F8FAFC;
-  --foreground: #111827;
+  --background: #FFFFFF;
+  --foreground: #1A1A1A;
+
+  /* Emons exact design specification tokens */
+  --color-primary-red: #E5402C;
+  --color-red-hover: #CF3722;
+  --color-ink: #1A1A1A;
+  --color-body-gray: #6E6E6E;
+  --color-muted-gray: #9A9A9A;
+  --color-bg-white: #FFFFFF;
+  --color-bg-soft: #F6F6F5;
+  --color-pill-outline: #F6C9BE;
+  --color-pill-outline-dark: #F2A28E;
+  --color-illustration-mint: #B7CEC1;
+  --color-illustration-mint-2: #DCE7DE;
+  --color-illustration-teal-dark: #7C9C8C;
+  --color-card-active-red: #E5402C;
 }
 
 body {
