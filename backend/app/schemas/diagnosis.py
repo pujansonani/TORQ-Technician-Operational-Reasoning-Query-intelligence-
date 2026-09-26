@@ -45,6 +45,8 @@ class RecommendedTest(BaseModel):
 
 class CostEstimate(BaseModel):
     """Repair cost breakdown."""
+    cause_id: str = ""
+    cause_name: str = ""
     parts: list[dict[str, Any]] = Field(default_factory=list)
     # [{"part_number": "...", "description": "...", "price": 1200.0, "quantity": 1}]
     labor_hours: float = 0.0

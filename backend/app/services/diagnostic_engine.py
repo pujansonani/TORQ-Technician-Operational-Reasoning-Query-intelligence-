@@ -192,6 +192,41 @@ class DiagnosticEngine:
 
     # ── Step 3: Bayesian Update ──────────────────────────────────────
 
+    def _evaluate_outcome(self, result_text: str, test_def: dict[str, Any]) -> str:
+        """
+        Evaluate technician's result input against test definition.
+        Returns 'pass', 'fail', or 'unknown'.
+        """
+        res = result_text.strip().lower()
+        if res in ("pass", "ok", "good", "normal", "yes", "passed", "within spec", "positive", "true", "fine"):
+            return "pass"
+        if res in ("fail", "bad", "low", "high", "abnormal", "no", "failed", "out of spec", "negative", "false", "leak", "dirty", "clogged", "broken"):
+            return "fail"
+
+        # Check numeric comparison against description or specs
+        num = self._extract_number(res)
+        desc = test_def.get("description", "").lower()
+        if num is not None:
+            # Check for "≥ 280", ">= 280", "â‰¥ 280", "Expected: ≥ 280", "Expected: 280"
+            gte_match = re.search(r"(?:≥|>=|â‰¥|>|<|\bmin\b|\bat least\b|expected[:\s]+[^\d]*)(\d+(?:\.\d+)?)", desc, re.IGNORECASE)
+            if gte_match:
+                thresh = float(gte_match.group(1))
+                return "pass" if num >= thresh else "fail"
+
+            # Check for range e.g. "4.5-5.5" or "0.5-0.8" or "20-80"
+            range_match = re.search(r"(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)", desc)
+            if range_match:
+                low_val, high_val = float(range_match.group(1)), float(range_match.group(2))
+                return "pass" if (low_val * 0.9 <= num <= high_val * 1.1) else "fail"
+
+            # Check for "~2200" or "approx 2200"
+            approx_match = re.search(r"(?:~|\bapprox\b|\babout\b)\s*(\d+(?:\.\d+)?)", desc)
+            if approx_match:
+                target_val = float(approx_match.group(1))
+                return "pass" if (target_val * 0.7 <= num <= target_val * 1.3) else "fail"
+
+        return "unknown"
+
     def bayesian_update(
         self,
         current_posteriors: dict[str, float],
@@ -205,15 +240,6 @@ class DiagnosticEngine:
         For each cause, compute the likelihood of seeing this test result
         given that cause is the true root cause, then multiply by the prior
         and renormalize.
-
-        Args:
-            current_posteriors: Current probability distribution over causes.
-            test_id: ID of the test that was performed.
-            result: Test result ("pass", "fail", or a measurement value).
-            dtc_entry: Full DTC knowledge base entry.
-
-        Returns:
-            Updated probability distribution over causes.
         """
         # Find the test definition
         test_def = None
@@ -228,58 +254,62 @@ class DiagnosticEngine:
 
         expected_if_cause = test_def.get("expected_if_cause", {})
         result_normalized = result.strip().lower()
+        outcome = self._evaluate_outcome(result, test_def)
+        discriminates = set(test_def.get("discriminates", []))
 
         updated: dict[str, float] = {}
 
         for cause_id, prior_p in current_posteriors.items():
-            # What result would we expect if this cause were true?
-            expected = expected_if_cause.get(cause_id, "pass").lower()
+            expected = expected_if_cause.get(cause_id)
 
-            # Compute likelihood P(result | cause)
-            if result_normalized == expected:
-                # Result matches what we'd expect if this cause is true
-                likelihood = 0.9
-            elif result_normalized in ("pass", "fail") and expected in ("pass", "fail"):
-                # Binary mismatch — strong evidence against this cause
-                likelihood = 0.1
+            if expected is None and cause_id not in discriminates:
+                # Test does not discriminate this cause — neutral evidence
+                likelihood = 0.50
+            elif outcome == "pass":
+                if expected == "pass":
+                    likelihood = 0.88
+                elif expected == "fail":
+                    likelihood = 0.12
+                else:
+                    likelihood = 0.50
+            elif outcome == "fail":
+                if expected == "fail":
+                    likelihood = 0.90
+                elif expected == "pass":
+                    likelihood = 0.10
+                else:
+                    likelihood = 0.50
+            elif result_normalized == (expected or "").lower():
+                likelihood = 0.88
+            elif result_normalized in ("pass", "fail") and (expected or "").lower() in ("pass", "fail"):
+                likelihood = 0.12
             else:
-                # Measurement value or uncertain match — moderate evidence
-                # Check if the result is "close" to expected
-                likelihood = self._measurement_likelihood(result_normalized, expected)
+                expected_str = (expected or "pass").lower()
+                likelihood = self._measurement_likelihood(result_normalized, expected_str)
 
             updated[cause_id] = likelihood * prior_p
 
         # Renormalize
         total = sum(updated.values())
         if total == 0:
-            # Avoid division by zero — uniform fallback
             n = len(updated)
             return {cid: 1.0 / n for cid in updated}
 
         return {cid: p / total for cid, p in updated.items()}
 
     def _measurement_likelihood(self, actual: str, expected: str) -> float:
-        """
-        Compute likelihood for measurement-type test results.
-
-        Tries to parse numeric values and compute a soft match.
-        Falls back to string matching.
-        """
-        # Try to extract numeric values
+        """Compute likelihood for measurement-type test results."""
         actual_num = self._extract_number(actual)
         expected_num = self._extract_number(expected)
 
         if actual_num is not None and expected_num is not None:
-            # Soft match: likelihood decreases with distance from expected
             if expected_num == 0:
                 ratio = 1.0 if actual_num == 0 else 0.3
             else:
                 ratio = abs(actual_num - expected_num) / abs(expected_num)
-            # Sigmoid-like decay
             likelihood = 1.0 / (1.0 + ratio * 5)
             return max(0.05, min(0.95, likelihood))
 
-        # String matching fallback
         if actual == expected:
             return 0.9
         elif expected in actual or actual in expected:

@@ -92,10 +92,13 @@ class CostEstimator:
 
         # Consumables (gaskets, fluids, etc.) — percentage of parts
         consumables = parts_total * DEFAULT_CONSUMABLES_PERCENT
-
         total = parts_total + labor_cost + consumables
 
+        cause_name = cause_info.get("name", cause_id)
+
         return CostEstimate(
+            cause_id=cause_id,
+            cause_name=cause_name,
             parts=parts_list,
             labor_hours=labor_hours,
             labor_rate_per_hour=self._labor_rate,

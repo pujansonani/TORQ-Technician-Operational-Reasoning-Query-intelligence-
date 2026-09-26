@@ -496,6 +496,8 @@ def _reconstruct_posteriors(
             return event.payload["posteriors"]
         if event.type == "result_entered" and "posteriors_after" in event.payload:
             return event.payload["posteriors_after"]
+        if event.type == "diagnosis_started" and "priors" in event.payload:
+            return event.payload["priors"]
     return {}
 
 

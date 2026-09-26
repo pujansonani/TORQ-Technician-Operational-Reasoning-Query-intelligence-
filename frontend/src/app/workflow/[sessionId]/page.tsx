@@ -497,8 +497,15 @@ export default function WorkflowPage() {
           {session.cost_estimate && (
             <div className="torq-card">
               <div className="torq-card-header">
-                <h3 className="font-semibold text-dark text-sm">Cost Estimate</h3>
-                <div className="demo-badge">Demo Prices</div>
+                <div>
+                  <h3 className="font-semibold text-dark text-sm">Real-Time Cost Estimate</h3>
+                  {session.cost_estimate.cause_name && (
+                    <p className="text-xs text-primary font-medium mt-0.5">
+                      Target: {session.cost_estimate.cause_name}
+                    </p>
+                  )}
+                </div>
+                <div className="demo-badge">Live Estimate</div>
               </div>
               <div className="torq-card-body space-y-3">
                 {session.cost_estimate.parts.length > 0 && (

@@ -35,6 +35,8 @@ export interface RecommendedTest {
 }
 
 export interface CostEstimate {
+  cause_id?: string;
+  cause_name?: string;
   parts: PartLine[];
   labor_hours: number;
   labor_rate_per_hour: number;
