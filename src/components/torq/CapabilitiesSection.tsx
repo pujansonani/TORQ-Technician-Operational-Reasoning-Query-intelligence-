@@ -46,7 +46,7 @@ export const CapabilitiesSection: React.FC = () => {
     // Row 2
     {
       id: "torqlock",
-      title: "TORQ-Lock Validation",
+      title: "TORQ-LOCK Validation",
       subtitle: "Strips unverified numeric specs from LLM output",
       linkHref: "/settings",
     },

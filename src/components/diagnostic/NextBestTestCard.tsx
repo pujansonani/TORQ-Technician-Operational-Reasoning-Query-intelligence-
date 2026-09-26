@@ -2,12 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, AlertTriangle, HelpCircle, CheckCircle2, XCircle } from "lucide-react";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { ArrowRight, AlertTriangle, HelpCircle, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import { TORQLockBadge } from "./TORQLockBadge";
 import { NextBestTest } from "@/lib/mockData";
-import { useTorqStore } from "@/lib/store";
 
 interface NextBestTestCardProps {
   test: NextBestTest;
@@ -18,94 +15,99 @@ export const NextBestTestCard: React.FC<NextBestTestCardProps> = ({ test, sessio
   const [showRationale, setShowRationale] = useState(false);
 
   return (
-    <Card className="p-6 border-l-4 border-l-paccar-blue bg-white relative overflow-hidden" elevated>
-      <div className="flex flex-col gap-4">
-        
-        {/* Header with Step indicator & TORQ-Lock */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-surface-border pb-3">
-          <div className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-sm bg-paccar-blue text-white flex items-center justify-center font-mono font-bold text-sm">
-              {test.testNumber}
-            </span>
-            <span className="text-xs uppercase font-bold tracking-widest text-paccar-blue">
-              HERO RECOMMENDATION • NEXT BEST TEST
-            </span>
-          </div>
-          <TORQLockBadge verified={test.isTorqLockVerified} specCode="MX-FL-22" />
-        </div>
+    <div className="p-7 sm:p-8 rounded-[24px] bg-white border border-black/[0.08] shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative overflow-hidden space-y-6">
+      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#E5402C] via-[#E5402C]/80 to-transparent" />
 
-        {/* Title & Core Test */}
+      {/* Header with Step indicator & TORQ-LOCK */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/[0.06] pb-4">
+        <div className="flex items-center gap-3">
+          <span className="w-8 h-8 rounded-full bg-[#E5402C] text-white flex items-center justify-center font-mono font-bold text-sm shadow-sm">
+            {test.testNumber}
+          </span>
+          <div>
+            <div className="text-xs uppercase font-extrabold tracking-wider text-[#E5402C] flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>HERO RECOMMENDATION • NEXT BEST TEST</span>
+            </div>
+          </div>
+        </div>
+        <TORQLockBadge verified={test.isTorqLockVerified} specCode="MX-FL-22" />
+      </div>
+
+      {/* Title & Core Test */}
+      <div className="space-y-2">
+        <h3 className="text-2xl font-extrabold tracking-tight text-[#111827] leading-snug">
+          {test.title}
+        </h3>
+        <p className="text-sm font-normal text-[#4B5563] leading-relaxed">
+          {test.procedure}
+        </p>
+      </div>
+
+      {/* Target Nominal Specs - Apple HIG rounded container */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-[18px] bg-[#FAFBFB] border border-black/[0.06]">
         <div>
-          <h3 className="text-xl font-semibold text-industrial-dark leading-snug">
-            {test.title}
-          </h3>
-          <p className="mt-2 text-sm text-industrial-steel leading-relaxed">
-            {test.procedure}
+          <span className="text-[11px] uppercase tracking-wider text-[#6B7280] font-bold block mb-1">
+            TARGET METRIC
+          </span>
+          <span className="text-sm font-bold text-[#111827]">
+            {test.targetMetric}
+          </span>
+        </div>
+        <div>
+          <span className="text-[11px] uppercase tracking-wider text-[#6B7280] font-bold block mb-1">
+            NOMINAL OPERATING SPEC
+          </span>
+          <span className="text-sm font-mono font-bold text-emerald-700">
+            {test.nominalRange}
+          </span>
+        </div>
+      </div>
+
+      {/* Safety Advisory Banner */}
+      {test.safetyAdvisory && (
+        <div className="flex items-start gap-3 p-4 rounded-[16px] bg-amber-50/80 border border-amber-200/80 text-xs text-amber-900">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <p className="leading-relaxed">
+            <strong className="font-bold">Workshop Safety:</strong> {test.safetyAdvisory}
           </p>
         </div>
+      )}
 
-        {/* Target Nominal Specs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-surface-subtle rounded-input border border-surface-border">
-          <div>
-            <span className="text-[11px] uppercase tracking-wider text-industrial-muted font-medium block">
-              TARGET METRIC
-            </span>
-            <span className="text-sm font-semibold text-industrial-dark">
-              {test.targetMetric}
-            </span>
-          </div>
-          <div>
-            <span className="text-[11px] uppercase tracking-wider text-industrial-muted font-medium block">
-              NOMINAL OPERATING SPEC
-            </span>
-            <span className="text-sm font-mono font-bold text-emerald-700">
-              {test.nominalRange}
-            </span>
-          </div>
+      {/* Toggle Rationale */}
+      {showRationale && (
+        <div className="p-4 bg-red-50/40 rounded-[16px] border border-[#F6C9BE] text-xs text-[#111827] space-y-1.5">
+          <span className="font-bold text-[#E5402C] uppercase tracking-wider text-[11px] block">
+            TORQ DECISION ENGINE RATIONALE
+          </span>
+          <p className="leading-relaxed text-[#374151] font-medium">
+            {test.rationale}
+          </p>
         </div>
+      )}
 
-        {/* Safety Advisory Banner */}
-        {test.safetyAdvisory && (
-          <div className="flex items-start gap-2.5 p-3 rounded-input bg-amber-50/70 border border-amber-200 text-xs text-amber-900">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              <strong className="font-semibold">Workshop Safety:</strong> {test.safetyAdvisory}
-            </p>
-          </div>
-        )}
+      {/* Action Controls - Apple HIG Pill CTA */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+        <button
+          type="button"
+          onClick={() => setShowRationale(!showRationale)}
+          className="text-xs font-bold text-[#6B7280] hover:text-[#E5402C] flex items-center gap-1.5 transition-colors"
+        >
+          <HelpCircle className="w-4 h-4" />
+          <span>{showRationale ? "Hide reasoning" : "Why this test?"}</span>
+        </button>
 
-        {/* Toggle Rationale */}
-        {showRationale && (
-          <div className="p-3.5 bg-blue-50/60 rounded-input border border-blue-200 text-xs text-industrial-dark space-y-1">
-            <span className="font-semibold text-paccar-blue uppercase tracking-wider text-[10px] block">
-              DECISION ENGINE RATIONALE
-            </span>
-            <p className="leading-relaxed text-industrial-steel">
-              {test.rationale}
-            </p>
-          </div>
-        )}
-
-        {/* Action Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+        <Link href={`/diagnostics/${sessionId}/workflow`}>
           <button
             type="button"
-            onClick={() => setShowRationale(!showRationale)}
-            className="text-xs font-medium text-industrial-steel hover:text-paccar-blue flex items-center gap-1.5 transition-colors"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#E5402C] hover:bg-[#CF3722] text-white text-xs font-bold tracking-tight shadow-[0_4px_16px_rgba(229,64,44,0.25)] hover:shadow-[0_6px_20px_rgba(229,64,44,0.35)] transition-all"
           >
-            <HelpCircle className="w-3.5 h-3.5" />
-            <span>{showRationale ? "Hide reasoning" : "Why this test?"}</span>
+            <span>Execute Guided Test Workflow</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
-
-          <Link href={`/diagnostics/${sessionId}/workflow`}>
-            <Button size="lg" className="gap-2 font-semibold">
-              <span>Execute Guided Test</span>
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
-        </div>
-
+        </Link>
       </div>
-    </Card>
+
+    </div>
   );
 };

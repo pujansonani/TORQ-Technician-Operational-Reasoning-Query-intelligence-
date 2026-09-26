@@ -16,8 +16,6 @@ import {
   Sparkles
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ConfidenceBar } from "@/components/diagnostic/ConfidenceBar";
 import { NextBestTestCard } from "@/components/diagnostic/NextBestTestCard";
@@ -36,44 +34,48 @@ export default function DiagnosisResultPage({ params }: { params: { id: string }
 
   return (
     <AppShell>
-      <div className="space-y-8">
+      <div className="space-y-10">
         
-        {/* HEADER BAR: SESSION METADATA & ACTIONS */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-surface-border pb-4">
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-mono font-bold text-paccar-blue uppercase tracking-wider">
+        {/* HEADER BAR: SESSION METADATA & ACTIONS - APPLE HIG TYPOGRAPHY */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-black/[0.06]">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-gray-100 text-[#111827] border border-gray-200">
                 SESSION {activeSession.id}
               </span>
-              <span className="text-industrial-caption">•</span>
-              <Badge variant={activeSession.status === "Root-Cause-Confirmed" ? "success" : "paccar"} size="sm">
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-tight border ${
+                activeSession.status === "Root-Cause-Confirmed"
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                  : "bg-blue-50 text-blue-800 border-blue-300"
+              }`}>
                 {activeSession.status === "Root-Cause-Confirmed" ? "ROOT CAUSE CONFIRMED" : "ASSESSMENT IN PROGRESS"}
-              </Badge>
+              </span>
               <TORQLockBadge verified={true} />
             </div>
             
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-industrial-dark">
-              Diagnostic Assessment
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#111827]">
+              Diagnostic <span className="italic font-bold text-[#E5402C]">Assessment</span>
             </h1>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs text-industrial-steel pt-0.5">
-              <span className="flex items-center gap-1.5 font-medium">
-                <Truck className="w-3.5 h-3.5 text-paccar-blue" />
+            <div className="flex flex-wrap items-center gap-3 text-xs text-[#4B5563] pt-1 font-medium">
+              <span className="flex items-center gap-1.5 font-bold text-[#111827]">
+                <Truck className="w-4 h-4 text-[#E5402C]" />
                 {activeSession.truckModel} ({activeSession.truckId})
               </span>
               <span>•</span>
               <span className="font-mono">{activeSession.engine}</span>
               <span>•</span>
-              <span className="font-mono font-semibold text-paccar-red">{activeSession.dtc}</span>
+              <span className="font-mono font-bold text-[#E5402C]">{activeSession.dtc}</span>
               <span>•</span>
-              <span className="text-industrial-muted">{formatTimeAgo(activeSession.updatedAt)}</span>
+              <span className="text-[#6B7280]">{formatTimeAgo(activeSession.updatedAt)}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
+              type="button"
               onClick={resetDemoSession}
-              className="text-xs font-medium text-industrial-steel hover:text-paccar-blue px-3 py-2 rounded-input border border-surface-border bg-white flex items-center gap-1.5 transition-colors"
+              className="text-xs font-bold text-[#4B5563] hover:text-[#111827] px-4 py-2.5 rounded-full border border-black/[0.1] bg-white hover:bg-gray-50 flex items-center gap-1.5 transition-all shadow-sm"
               title="Reset Demo Scenario"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -81,36 +83,42 @@ export default function DiagnosisResultPage({ params }: { params: { id: string }
             </button>
 
             <Link href={`/reports/${activeSession.id}`}>
-              <Button variant="secondary" size="md" className="gap-2">
-                <FileText className="w-4 h-4" />
+              <button
+                type="button"
+                className="text-xs font-bold text-[#111827] px-5 py-2.5 rounded-full border border-black/[0.1] bg-white hover:bg-gray-50 flex items-center gap-2 transition-all shadow-sm"
+              >
+                <FileText className="w-4 h-4 text-[#E5402C]" />
                 <span>Service Report</span>
-              </Button>
+              </button>
             </Link>
 
             <Link href={`/diagnostics/${activeSession.id}/workflow`}>
-              <Button size="md" className="gap-2 font-semibold">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#E5402C] hover:bg-[#CF3722] text-white text-xs font-bold tracking-tight shadow-[0_4px_16px_rgba(229,64,44,0.25)] transition-all"
+              >
                 <Wrench className="w-4 h-4" />
                 <span>Guided Workflow</span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </Link>
           </div>
         </div>
 
-        {/* TOP BANNER: EVIDENCE-BACKED SUMMARY */}
-        <div className="p-4 sm:p-5 rounded-card bg-paccar-softblue border border-blue-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-paccar-blue text-white flex items-center justify-center shrink-0 mt-0.5">
-              <Sparkles className="w-4 h-4" />
+        {/* TOP BANNER: EVIDENCE-BACKED SUMMARY - APPLE HIG CARD */}
+        <div className="p-6 rounded-[24px] bg-gradient-to-r from-red-50/60 via-white to-red-50/30 border border-[#F6C9BE] flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-[0_2px_12px_rgba(229,64,44,0.06)]">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-[#E5402C] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+              <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-paccar-blue">
+              <div className="text-xs font-extrabold uppercase tracking-wider text-[#E5402C]">
                 EVIDENCE-BACKED ROOT HYPOTHESIS
               </div>
-              <h2 className="text-base sm:text-lg font-semibold text-industrial-dark">
-                {leadingCandidate.name} ({leadingCandidate.currentConfidence}% Confidence)
+              <h2 className="text-lg sm:text-xl font-extrabold text-[#111827] mt-0.5">
+                {leadingCandidate.name} <span className="font-mono text-[#E5402C] italic">({leadingCandidate.currentConfidence}% Confidence)</span>
               </h2>
-              <p className="text-xs text-industrial-steel mt-0.5">
+              <p className="text-xs sm:text-sm text-[#4B5563] mt-1 font-normal max-w-2xl leading-relaxed">
                 {leadingCandidate.description}
               </p>
             </div>
@@ -118,17 +126,20 @@ export default function DiagnosisResultPage({ params }: { params: { id: string }
 
           {activeSession.confirmedRootCause ? (
             <div className="sm:text-right shrink-0">
-              <Badge variant="success" size="md" className="font-semibold gap-1.5">
-                <CheckCircle2 className="w-4 h-4" />
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 CONFIRMED BY HYDRAULIC TEST
-              </Badge>
+              </span>
             </div>
           ) : (
             <Link href={`/diagnostics/${activeSession.id}/workflow`} className="shrink-0">
-              <Button size="sm" className="gap-1.5 text-xs font-semibold">
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#111827] hover:bg-black text-white text-xs font-bold transition-all shadow-sm"
+              >
                 <span>Run Next Best Test</span>
                 <ChevronRight className="w-3.5 h-3.5" />
-              </Button>
+              </button>
             </Link>
           )}
         </div>
@@ -137,28 +148,28 @@ export default function DiagnosisResultPage({ params }: { params: { id: string }
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* LEFT COLUMN: DIAGNOSTIC REASONING & EVIDENCE (7 COLS) */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-8">
             
             {/* HERO NEXT BEST TEST CARD */}
             <NextBestTestCard test={activeSession.nextBestTest} sessionId={activeSession.id} />
 
             {/* WHY TORQ THINKS THIS (EVIDENCE SECTION) */}
-            <section className="space-y-3">
+            <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-industrial-dark">
+                  <h3 className="text-xl font-extrabold tracking-tight text-[#111827]">
                     Why TORQ Thinks This
                   </h3>
-                  <p className="text-xs text-industrial-muted">
+                  <p className="text-xs text-[#6B7280]">
                     Cross-referenced evidence citations with relevance rankings
                   </p>
                 </div>
-                <Badge variant="outline" size="sm" className="font-mono text-[10px]">
+                <span className="inline-flex px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-gray-100 text-[#111827] border border-gray-200">
                   3 SOURCES SYNTHESIZED
-                </Badge>
+                </span>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 {activeSession.evidence.map((ev) => (
                   <EvidenceCard key={ev.id} evidence={ev} />
                 ))}
@@ -167,48 +178,54 @@ export default function DiagnosisResultPage({ params }: { params: { id: string }
 
             {/* TEST HISTORY / AUDIT LOG */}
             {activeSession.testHistory.length > 0 && (
-              <Card className="p-5 bg-white space-y-3">
-                <h3 className="text-sm font-semibold text-industrial-dark">
+              <div className="p-6 bg-white rounded-[24px] border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
+                <h3 className="text-base font-extrabold tracking-tight text-[#111827]">
                   Executed Diagnostic Tests ({activeSession.testHistory.length})
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {activeSession.testHistory.map((item, idx) => (
-                    <div key={idx} className="p-3 rounded-input bg-surface-subtle border border-surface-border flex items-center justify-between text-xs">
+                    <div key={idx} className="p-4 rounded-[16px] bg-[#FAFBFB] border border-black/[0.06] flex items-center justify-between text-xs">
                       <div>
-                        <span className="font-semibold text-industrial-dark block">{item.testName}</span>
-                        <span className="text-industrial-steel font-mono">{item.measuredValue}</span>
+                        <span className="font-bold text-[#111827] block text-sm">{item.testName}</span>
+                        <span className="text-[#4B5563] font-mono text-xs">{item.measuredValue}</span>
                       </div>
-                      <Badge variant={item.result === "FAIL" ? "danger" : item.result === "PASS" ? "success" : "warning"}>
+                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${
+                        item.result === "FAIL"
+                          ? "bg-red-50 text-[#E5402C] border border-[#F6C9BE]"
+                          : item.result === "PASS"
+                          ? "bg-emerald-50 text-emerald-800 border border-emerald-300"
+                          : "bg-amber-50 text-amber-800 border border-amber-300"
+                      }`}>
                         {item.result}
-                      </Badge>
+                      </span>
                     </div>
                   ))}
                 </div>
-              </Card>
+              </div>
             )}
 
           </div>
 
           {/* RIGHT COLUMN: CONFIDENCE DISTRIBUTION & REPAIR ESTIMATOR (5 COLS) */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 space-y-8">
             
             {/* CONFIDENCE DISTRIBUTION CARD */}
-            <Card className="p-6 bg-white space-y-4">
-              <div className="border-b border-surface-border pb-3 flex items-center justify-between">
+            <div className="p-7 bg-white rounded-[24px] border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-5">
+              <div className="border-b border-black/[0.06] pb-4 flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-industrial-dark">
+                  <h3 className="text-lg font-extrabold tracking-tight text-[#111827]">
                     Ranked Candidate Causes
                   </h3>
-                  <p className="text-xs text-industrial-muted">
-                    Live dynamic distribution re-weighted by test results
+                  <p className="text-xs text-[#6B7280]">
+                    Live Bayesian distribution re-weighted by test results
                   </p>
                 </div>
-                <span className="text-xs font-mono font-semibold text-paccar-blue">
+                <span className="text-xs font-mono font-bold text-[#E5402C] uppercase tracking-wider">
                   {activeSession.candidates.length} CANDIDATES
                 </span>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 {activeSession.candidates.map((cand, idx) => (
                   <ConfidenceBar
                     key={cand.id}
@@ -220,13 +237,13 @@ export default function DiagnosisResultPage({ params }: { params: { id: string }
                 ))}
               </div>
 
-              <div className="pt-2 border-t border-surface-border/60 text-[11px] text-industrial-steel flex items-center justify-between">
+              <div className="pt-3 border-t border-black/[0.05] text-[11px] text-[#6B7280] flex items-center justify-between">
                 <span>Confidence re-weights instantly upon test submission</span>
-                <Link href={`/diagnostics/${activeSession.id}/workflow`} className="text-paccar-blue font-semibold hover:underline">
+                <Link href={`/diagnostics/${activeSession.id}/workflow`} className="text-[#E5402C] font-bold hover:underline">
                   Submit Result &rarr;
                 </Link>
               </div>
-            </Card>
+            </div>
 
             {/* REPAIR COST ESTIMATOR */}
             <RepairCostEstimator estimate={activeSession.repairEstimate} />

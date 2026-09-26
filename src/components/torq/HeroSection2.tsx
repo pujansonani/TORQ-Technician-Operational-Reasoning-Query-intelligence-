@@ -53,11 +53,11 @@ export const HeroSection2: React.FC = () => {
               <span>AI DIAGNOSTIC COPILOT · BUILT FOR PACCAR</span>
             </div>
 
-            {/* 3-Line Display Headline */}
-            <h1 className="text-[34px] sm:text-[46px] lg:text-[56px] font-normal tracking-[-0.01em] text-[#1A1A1A] leading-[1.08]">
-              <span className="block font-normal">Your fleet&apos;s downtime.</span>
-              <span className="block font-normal">Our diagnosis.</span>
-              <span className="block font-medium">Welcome to TORQ.</span>
+            {/* 3-Line Display Headline - Apple HIG Bold Italic Hierarchy */}
+            <h1 className="text-[38px] sm:text-[50px] lg:text-[62px] tracking-[-0.03em] text-[#111827] leading-[1.05]">
+              <span className="block font-extrabold">Your fleet&apos;s downtime.</span>
+              <span className="block font-bold text-[#4B5563]">Our diagnosis.</span>
+              <span className="block font-extrabold italic text-[#E5402C]">Welcome to TORQ.</span>
             </h1>
 
             {/* Two Outlined Pill Buttons */}

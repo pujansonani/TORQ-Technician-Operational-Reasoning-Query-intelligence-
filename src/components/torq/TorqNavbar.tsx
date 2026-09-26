@@ -33,7 +33,7 @@ export const TorqNavbar: React.FC = () => {
     >
       <div className="max-w-[1280px] mx-auto px-6 h-[72px] flex items-center justify-between">
         
-        {/* Left: TORQ Logo ('T' square badge + lowercase 'torq' wordmark) */}
+        {/* Left: TORQ Logo ('T' square badge + bold uppercase 'TORQ' wordmark) */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 bg-[#E5402C] rounded-xl flex items-center justify-center text-white font-bold text-lg tracking-tight shadow-sm group-hover:bg-[#CF3722] transition-colors">
             <span className="font-sans font-extrabold text-xl leading-none">
@@ -41,10 +41,10 @@ export const TorqNavbar: React.FC = () => {
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="font-semibold text-2xl tracking-[-0.03em] text-[#1A1A1A] leading-none">
-              torq
+            <span className="font-extrabold text-2xl tracking-[-0.03em] text-[#111827] leading-none">
+              TORQ
             </span>
-            <span className="text-[10px] font-medium tracking-tight text-[#9A9A9A] mt-0.5 hidden sm:inline">
+            <span className="text-[10px] font-semibold italic tracking-wide text-[#E5402C] mt-0.5 hidden sm:inline">
               PACCAR Diagnostic Copilot
             </span>
           </div>

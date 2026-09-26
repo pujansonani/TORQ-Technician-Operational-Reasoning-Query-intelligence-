@@ -52,8 +52,8 @@ export const HeroSection1: React.FC = () => {
                 <div className="w-5 h-5 bg-[#E5402C] rounded-[4px] flex items-center justify-center text-white text-[10px] font-black">
                   T
                 </div>
-                <span className="font-semibold text-xs tracking-tight text-[#1A1A1A]">
-                  torq
+                <span className="font-extrabold text-xs tracking-tight text-[#111827]">
+                  TORQ
                 </span>
               </div>
               <div className="hidden sm:flex items-center gap-4 text-[11px] font-medium text-[#6E6E6E]">

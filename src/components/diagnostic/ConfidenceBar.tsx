@@ -17,41 +17,31 @@ export const ConfidenceBar: React.FC<ConfidenceBarProps> = ({
   confidence,
   subsystem,
   isLeading,
-  statusColor = "blue",
 }) => {
-  const barColors = {
-    blue: "bg-paccar-blue",
-    emerald: "bg-status-success",
-    amber: "bg-status-warning",
-    rose: "bg-paccar-red",
-  };
-
-  const activeColor = isLeading ? "bg-paccar-blue" : "bg-industrial-metal";
-
   return (
-    <div className="w-full space-y-1.5 py-1">
+    <div className="w-full space-y-2 py-1.5">
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2 max-w-[80%]">
-          <span className={cn("font-medium truncate", isLeading ? "text-industrial-dark font-semibold" : "text-industrial-steel")}>
+          <span className={cn("truncate font-semibold", isLeading ? "text-[#111827] font-bold" : "text-[#4B5563]")}>
             {label}
           </span>
           {subsystem && (
-            <span className="text-[10px] text-industrial-caption uppercase tracking-wider hidden sm:inline">
+            <span className="text-[10px] text-[#9CA3AF] uppercase font-bold tracking-wider hidden sm:inline">
               ({subsystem})
             </span>
           )}
         </div>
         <div className="flex items-center gap-1.5 font-mono">
-          <span className={cn("text-sm font-semibold", isLeading ? "text-paccar-blue" : "text-industrial-steel")}>
+          <span className={cn("text-xs font-bold", isLeading ? "text-[#E5402C]" : "text-[#6B7280]")}>
             {confidence}%
           </span>
         </div>
       </div>
 
-      {/* Progress Track */}
-      <div className="w-full h-2.5 bg-surface-muted rounded-full overflow-hidden p-0.5 border border-surface-border">
+      {/* Progress Track - Apple HIG Smooth Pill */}
+      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden p-0.5">
         <motion.div
-          className={cn("h-full rounded-full transition-colors", isLeading ? "bg-paccar-blue" : "bg-slate-400")}
+          className={cn("h-full rounded-full transition-colors", isLeading ? "bg-[#E5402C]" : "bg-gray-400")}
           initial={{ width: 0 }}
           animate={{ width: `${Math.max(4, confidence)}%` }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}

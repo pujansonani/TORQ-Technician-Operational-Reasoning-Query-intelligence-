@@ -15,8 +15,8 @@ export const TorqFooter: React.FC = () => {
               <div className="w-10 h-10 bg-[#E5402C] rounded-xl flex items-center justify-center text-white font-bold text-lg">
                 <span className="font-sans font-extrabold text-xl leading-none">T</span>
               </div>
-              <span className="font-semibold text-2xl tracking-tight text-white">
-                torq
+              <span className="font-semibold text-2xl tracking-tight text-white uppercase">
+                TORQ
               </span>
             </div>
             <p className="text-sm text-[#9A9A9A] max-w-sm leading-relaxed">
@@ -28,7 +28,7 @@ export const TorqFooter: React.FC = () => {
                 PACCAR MX-13 Verified
               </span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 text-white font-mono text-[11px]">
-                TORQ-Lock™ Enabled
+                TORQ-LOCK™ Enabled
               </span>
             </div>
           </div>
@@ -42,7 +42,7 @@ export const TorqFooter: React.FC = () => {
               <li><Link href="/diagnostics/TRQ-2026-0941/workflow" className="hover:text-white transition-colors">Bayesian Diagnosis</Link></li>
               <li><Link href="/diagnostics/TRQ-2026-0941" className="hover:text-white transition-colors">RAG Knowledge Base</Link></li>
               <li><Link href="/diagnostics/TRQ-2026-0941/workflow" className="hover:text-white transition-colors">Guided Testing</Link></li>
-              <li><Link href="/settings" className="hover:text-white transition-colors">TORQ-Lock Validation</Link></li>
+              <li><Link href="/settings" className="hover:text-white transition-colors">TORQ-LOCK Validation</Link></li>
               <li><Link href="/fleet" className="hover:text-white transition-colors">Fleet Intelligence</Link></li>
             </ul>
           </div>

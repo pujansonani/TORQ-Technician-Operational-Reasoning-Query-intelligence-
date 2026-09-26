@@ -9,7 +9,8 @@ import {
   Truck, 
   AlertTriangle,
   ArrowUpRight,
-  Database
+  Database,
+  Sparkles
 } from "lucide-react";
 import { 
   BarChart, 
@@ -23,130 +24,134 @@ import {
   CartesianGrid 
 } from "recharts";
 import { AppShell } from "@/components/layout/AppShell";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { FLEET_STATISTICS } from "@/lib/mockData";
 import { formatCurrencyINR } from "@/lib/utils";
 
 export default function FleetIntelligencePage() {
   return (
     <AppShell>
-      <div className="space-y-8">
+      <div className="space-y-10">
         
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-surface-border pb-4">
-          <div>
+        {/* Header - Apple HIG Typography */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-black/[0.06]">
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" size="sm" className="bg-amber-50 text-amber-800 border-amber-300 font-mono text-[10px]">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300 font-mono text-[11px] font-bold">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 DEMO DATA (1,450 TRUCK PACCAR FLEET TELEMETRY)
-              </Badge>
+              </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-industrial-dark mt-1">
-              Fleet Intelligence
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#111827]">
+              Fleet <span className="italic font-bold text-[#E5402C]">Intelligence</span>
             </h1>
-            <p className="text-sm text-industrial-steel mt-1">
-              Turn previous repairs into diagnostic evidence across Kenworth and Peterbilt units.
+            <p className="text-sm sm:text-base text-[#4B5563] max-w-2xl font-normal leading-relaxed">
+              Transform historical repair outcomes into decisive diagnostic evidence across connected Kenworth and Peterbilt units.
             </p>
           </div>
         </div>
 
-        {/* 4 TOP AGGREGATE METRICS */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-5 bg-white space-y-2">
-            <span className="text-xs font-semibold text-industrial-steel uppercase tracking-wider block">
-              SIMILAR DTC CASES
+        {/* 4 TOP AGGREGATE METRICS - APPLE HIG CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          
+          <div className="p-6 bg-white rounded-[20px] border border-black/[0.07] shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 relative group overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#E5402C] to-[#E5402C]/30 opacity-80" />
+            <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider block mb-2">
+              Similar DTC Cases
             </span>
-            <span className="text-3xl sm:text-4xl font-mono font-bold text-industrial-dark block">
+            <span className="text-4xl font-extrabold font-mono text-[#111827] block">
               {FLEET_STATISTICS.similarCasesCount}
             </span>
-            <span className="text-xs text-industrial-muted">
+            <span className="text-xs text-[#6B7280] mt-2 block font-medium">
               Identical SPN 94 fault signatures
             </span>
-          </Card>
+          </div>
 
-          <Card className="p-5 bg-white space-y-2">
-            <span className="text-xs font-semibold text-industrial-steel uppercase tracking-wider block">
-              RESOLUTION ACCURACY
+          <div className="p-6 bg-white rounded-[20px] border border-black/[0.07] shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 relative group overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-200 opacity-80" />
+            <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider block mb-2">
+              Resolution Accuracy
             </span>
-            <span className="text-3xl sm:text-4xl font-mono font-bold text-emerald-700 block">
+            <span className="text-4xl font-extrabold font-mono text-emerald-700 block">
               {FLEET_STATISTICS.resolutionRatePercent}%
             </span>
-            <span className="text-xs text-emerald-600 font-medium">
+            <span className="text-xs text-emerald-600 font-bold mt-2 block">
               18 resolved by fuel inspection
             </span>
-          </Card>
+          </div>
 
-          <Card className="p-5 bg-white space-y-2">
-            <span className="text-xs font-semibold text-industrial-steel uppercase tracking-wider block">
-              AVERAGE REPAIR COST
+          <div className="p-6 bg-white rounded-[20px] border border-black/[0.07] shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 relative group overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-blue-200 opacity-80" />
+            <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider block mb-2">
+              Average Repair Cost
             </span>
-            <span className="text-3xl sm:text-4xl font-mono font-bold text-industrial-dark block">
+            <span className="text-4xl font-extrabold font-mono text-[#111827] block">
               {formatCurrencyINR(FLEET_STATISTICS.averageRepairCostINR)}
             </span>
-            <span className="text-xs text-industrial-muted">
+            <span className="text-xs text-[#6B7280] mt-2 block font-medium">
               Standard dealer benchmark
             </span>
-          </Card>
+          </div>
 
-          <Card className="p-5 bg-white space-y-2">
-            <span className="text-xs font-semibold text-industrial-steel uppercase tracking-wider block">
-              AVG DIAGNOSTIC DURATION
+          <div className="p-6 bg-white rounded-[20px] border border-black/[0.07] shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 relative group overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-200 opacity-80" />
+            <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider block mb-2">
+              Avg Diagnostic Duration
             </span>
-            <span className="text-3xl sm:text-4xl font-mono font-bold text-industrial-dark block">
-              {FLEET_STATISTICS.averageDiagnosticHours} <span className="text-base font-normal text-industrial-muted">hrs</span>
+            <span className="text-4xl font-extrabold font-mono text-[#111827] block">
+              {FLEET_STATISTICS.averageDiagnosticHours} <span className="text-xl font-normal text-[#6B7280]">hrs</span>
             </span>
-            <span className="text-xs text-industrial-muted">
+            <span className="text-xs text-[#6B7280] mt-2 block font-medium">
               Down from 3.8 hrs baseline
             </span>
-          </Card>
+          </div>
         </div>
 
-        {/* CHARTS ROW (RECHARTS CLEAN DATA VIZ) */}
+        {/* CHARTS ROW (RECHARTS CLEAN APPLE HIG DATA VIZ) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Chart 1: DTC Code Frequency */}
-          <Card className="p-6 bg-white space-y-4">
+          <div className="p-7 sm:p-8 bg-white rounded-[24px] border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-semibold text-industrial-dark">
+                <h3 className="text-lg font-extrabold tracking-tight text-[#111827]">
                   DTC Recurrence Across Fleet
                 </h3>
-                <p className="text-xs text-industrial-muted">
+                <p className="text-xs text-[#6B7280]">
                   Most frequent engine fault codes logged in the last 90 days
                 </p>
               </div>
-              <Badge variant="outline" size="sm" className="font-mono text-xs">
+              <span className="inline-flex px-3 py-1 rounded-full text-xs font-mono font-bold bg-red-50 text-[#E5402C] border border-[#F6C9BE]">
                 PACCAR MX-13
-              </Badge>
+              </span>
             </div>
 
             <div className="h-64 w-full pt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={FLEET_STATISTICS.dtcDistribution} layout="vertical" margin={{ left: 20, right: 20, top: 10, bottom: 10 }}>
                   <XAxis type="number" hide />
-                  <YAxis dataKey="code" type="category" width={80} tick={{ fontSize: 12, fill: "#475569" }} />
+                  <YAxis dataKey="code" type="category" width={90} tick={{ fontSize: 12, fill: "#374151", fontWeight: 600 }} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#FFFFFF", borderRadius: "8px", border: "1px solid #E4E7EC", fontSize: "12px" }}
+                    contentStyle={{ backgroundColor: "#FFFFFF", borderRadius: "14px", border: "1px solid rgba(0,0,0,0.08)", boxShadow: "0 4px 16px rgba(0,0,0,0.06)", fontSize: "12px" }}
                     formatter={(val: unknown) => [`${Number(val) || 0} cases`, "Frequency"]}
                   />
-                  <Bar dataKey="count" fill="#005A9C" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="count" fill="#E5402C" radius={[0, 8, 8, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </Card>
+          </div>
 
           {/* Chart 2: Resolution Time Trend */}
-          <Card className="p-6 bg-white space-y-4">
+          <div className="p-7 sm:p-8 bg-white rounded-[24px] border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-semibold text-industrial-dark">
+                <h3 className="text-lg font-extrabold tracking-tight text-[#111827]">
                   Mean Diagnostic Time Trend
                 </h3>
-                <p className="text-xs text-industrial-muted">
-                  Hours saved per technician with guided diagnostic workflows
+                <p className="text-xs text-[#6B7280]">
+                  Hours saved per technician with TORQ guided workflows
                 </p>
               </div>
-              <span className="text-xs font-mono font-semibold text-emerald-700 flex items-center gap-1">
+              <span className="text-xs font-mono font-bold text-emerald-700 flex items-center gap-1 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
                 <TrendingUp className="w-3.5 h-3.5" /> -25% DURATION
               </span>
             </div>
@@ -154,31 +159,35 @@ export default function FleetIntelligencePage() {
             <div className="h-64 w-full pt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={FLEET_STATISTICS.trendData} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#667085" }} />
-                  <YAxis domain={[1.5, 4]} tick={{ fontSize: 12, fill: "#667085" }} unit="h" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#6B7280" }} />
+                  <YAxis domain={[1.5, 4]} tick={{ fontSize: 12, fill: "#6B7280" }} unit="h" />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#FFFFFF", borderRadius: "8px", border: "1px solid #E4E7EC", fontSize: "12px" }}
+                    contentStyle={{ backgroundColor: "#FFFFFF", borderRadius: "14px", border: "1px solid rgba(0,0,0,0.08)", boxShadow: "0 4px 16px rgba(0,0,0,0.06)", fontSize: "12px" }}
                     formatter={(val: unknown) => [`${Number(val) || 0} hrs`, "Diagnostic Duration"]}
                   />
-                  <Line type="monotone" dataKey="resolvedHours" stroke="#005A9C" strokeWidth={3} dot={{ r: 4, fill: "#005A9C" }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="resolvedHours" stroke="#E5402C" strokeWidth={3} dot={{ r: 4, fill: "#E5402C" }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          </Card>
+          </div>
 
         </div>
 
-        {/* SIMILAR CASES DETAILED AUDIT */}
+        {/* SIMILAR CASES DETAILED AUDIT - APPLE HIG CARDS */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-industrial-dark">
-              Correlated Historical Case Summaries
-            </h3>
-            <span className="text-xs text-industrial-muted">Showing 4 most recent similar signatures</span>
+            <div>
+              <h3 className="text-xl font-extrabold tracking-tight text-[#111827]">
+                Correlated Historical Case Summaries
+              </h3>
+              <p className="text-xs text-[#6B7280]">
+                Showing 4 most recent similar signatures across service bays
+              </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {[
               {
                 truck: "PB-579 #4102",
@@ -217,31 +226,33 @@ export default function FleetIntelligencePage() {
                 cost: "₹24,500",
               },
             ].map((c, i) => (
-              <Card key={i} className="p-5 bg-white space-y-3">
-                <div className="flex items-center justify-between border-b border-surface-border pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <Truck className="w-4 h-4 text-paccar-blue" />
-                    <span className="font-semibold text-sm text-industrial-dark">{c.truck}</span>
+              <div key={i} className="p-6 bg-white rounded-[22px] border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-3.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)] transition-all">
+                <div className="flex items-center justify-between border-b border-black/[0.06] pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-[#E5402C]">
+                      <Truck className="w-4 h-4" />
+                    </div>
+                    <span className="font-extrabold text-sm text-[#111827]">{c.truck}</span>
                   </div>
-                  <span className="text-xs font-mono text-industrial-muted">{c.mileage}</span>
+                  <span className="text-xs font-mono text-[#6B7280]">{c.mileage}</span>
                 </div>
 
-                <div className="space-y-1.5 text-xs">
+                <div className="space-y-2 text-xs">
                   <div>
-                    <span className="text-industrial-muted font-medium block">CONFIRMED RESOLUTION</span>
-                    <span className="font-semibold text-industrial-dark">{c.rootCause}</span>
+                    <span className="text-[#6B7280] font-bold uppercase tracking-wider block text-[10px]">CONFIRMED RESOLUTION</span>
+                    <span className="font-bold text-[#111827] text-sm mt-0.5 block">{c.rootCause}</span>
                   </div>
                   <div>
-                    <span className="text-industrial-muted font-medium block">DECISIVE TEST PERFORMED</span>
-                    <span className="text-industrial-steel font-mono">{c.test}</span>
+                    <span className="text-[#6B7280] font-bold uppercase tracking-wider block text-[10px]">DECISIVE TEST PERFORMED</span>
+                    <span className="text-[#374151] font-mono text-xs mt-0.5 block">{c.test}</span>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-surface-border flex items-center justify-between text-xs font-mono text-industrial-steel">
-                  <span>Fix Time: {c.timeToFix}</span>
-                  <span className="font-bold text-industrial-dark">{c.cost}</span>
+                <div className="pt-3 border-t border-black/[0.05] flex items-center justify-between text-xs font-mono text-[#4B5563]">
+                  <span>Fix Time: <strong className="text-[#111827]">{c.timeToFix}</strong></span>
+                  <span className="font-bold text-[#E5402C] text-sm">{c.cost}</span>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </section>

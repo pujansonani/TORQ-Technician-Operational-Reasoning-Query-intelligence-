@@ -1,19 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   --background: #FFFFFF;
-  --foreground: #1A1A1A;
+  --foreground: #111827;
 
   /* TORQ exact design specification tokens */
   --color-primary-red: #E5402C;
   --color-red-hover: #CF3722;
-  --color-ink: #1A1A1A;
-  --color-body-gray: #6E6E6E;
-  --color-muted-gray: #9A9A9A;
+  --color-ink: #111827;
+  --color-body-gray: #4B5563;
+  --color-muted-gray: #6B7280;
   --color-bg-white: #FFFFFF;
-  --color-bg-soft: #F6F6F5;
+  --color-bg-soft: #F8FAFC;
   --color-pill-outline: #F6C9BE;
   --color-pill-outline-dark: #F2A28E;
   --color-illustration-mint: #B7CEC1;
@@ -25,18 +27,41 @@
 body {
   color: var(--foreground);
   background: var(--background);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Custom scrollbars for industrial density */
+/* Apple HIG Smooth Glass & Card Utilities */
+.apple-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid rgba(228, 231, 236, 0.9);
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.apple-card:hover {
+  box-shadow: 0 12px 28px rgba(16, 24, 40, 0.07);
+  transform: translateY(-2px);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: #F8FAFC;
 }
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;

@@ -14,13 +14,12 @@ import {
   ArrowRight, 
   ChevronRight,
   Sparkles,
-  BarChart2
+  BarChart2,
+  ShieldCheck,
+  Zap
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Input } from "@/components/ui/Input";
 import { RECENT_DIAGNOSTICS_DATA, FLEET_STATISTICS } from "@/lib/mockData";
 import { useTorqStore } from "@/lib/store";
 import { formatCurrencyINR } from "@/lib/utils";
@@ -49,145 +48,173 @@ export default function DashboardPage() {
         dtc,
       });
       router.push(`/diagnostics/${activeSession.id}`);
-    }, 1200);
+    }, 1000);
   };
 
   return (
     <AppShell>
-      <div className="space-y-8">
+      <div className="space-y-10">
         
-        {/* Title Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-surface-border pb-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-industrial-dark">
-              Good morning, Technician.
+        {/* Title & Cockpit Header - Apple HIG Typography */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-black/[0.06]">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-50 text-[#E5402C] border border-[#F6C9BE]">
+              <Sparkles className="w-3.5 h-3.5 text-[#E5402C]" />
+              <span>TORQ Workshop Operations</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#111827]">
+              Good morning, <span className="italic font-bold text-[#E5402C]">Technician.</span>
             </h1>
-            <p className="text-sm text-industrial-steel mt-1">
-              Here&apos;s what needs attention today across the PACCAR service bays.
+            <p className="text-sm sm:text-base text-[#4B5563] max-w-2xl font-normal leading-relaxed">
+              Active diagnostic sessions, Bayesian reasoning pipelines, and real-time PACCAR fleet telemetry across service bays.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <Link href="/diagnostics/new">
-              <Button size="md" className="gap-2 font-semibold">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-[#E5402C] hover:bg-[#CF3722] text-white text-sm font-bold tracking-tight shadow-[0_4px_16px_rgba(229,64,44,0.25)] hover:shadow-[0_6px_20px_rgba(229,64,44,0.35)] transition-all transform active:scale-[0.98]"
+              >
                 <Wrench className="w-4 h-4" />
-                <span>New Diagnosis</span>
-              </Button>
+                <span>Start New Diagnosis</span>
+                <ArrowRight className="w-4 h-4 ml-0.5" />
+              </button>
             </Link>
           </div>
         </div>
 
-        {/* TOP ROW: 4 METRIC CARDS */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-5 bg-white space-y-2">
-            <div className="flex items-center justify-between text-xs text-industrial-steel">
-              <span className="font-semibold uppercase tracking-wider">ACTIVE DIAGNOSTICS</span>
-              <Activity className="w-4 h-4 text-paccar-blue" />
+        {/* TOP ROW: 4 APPLE HIG METRIC CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          
+          {/* Card 1 */}
+          <div className="p-6 bg-white rounded-[20px] border border-black/[0.07] shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 relative group overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#E5402C] to-[#E5402C]/30 opacity-80" />
+            <div className="flex items-center justify-between text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-3">
+              <span>Active Diagnostics</span>
+              <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-[#E5402C]">
+                <Activity className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-3xl sm:text-4xl font-semibold font-mono tracking-tight text-industrial-dark">
+            <div className="text-4xl font-extrabold font-mono tracking-tight text-[#111827]">
               04
             </div>
-            <div className="text-xs text-industrial-muted">
-              2 awaiting test validation
+            <div className="mt-2 text-xs text-[#6B7280] font-medium flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              <span>2 awaiting physical test confirmation</span>
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-5 bg-white space-y-2">
-            <div className="flex items-center justify-between text-xs text-industrial-steel">
-              <span className="font-semibold uppercase tracking-wider">RESOLVED TODAY</span>
-              <CheckCircle2 className="w-4 h-4 text-status-success" />
+          {/* Card 2 */}
+          <div className="p-6 bg-white rounded-[20px] border border-black/[0.07] shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 relative group overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-200 opacity-80" />
+            <div className="flex items-center justify-between text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-3">
+              <span>Resolved Today</span>
+              <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-3xl sm:text-4xl font-semibold font-mono tracking-tight text-industrial-dark">
+            <div className="text-4xl font-extrabold font-mono tracking-tight text-[#111827]">
               08
             </div>
-            <div className="text-xs text-emerald-700 font-medium">
-              100% first-time fix rate
+            <div className="mt-2 text-xs text-emerald-700 font-semibold flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>100% first-time fix confirmation</span>
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-5 bg-white space-y-2">
-            <div className="flex items-center justify-between text-xs text-industrial-steel">
-              <span className="font-semibold uppercase tracking-wider">AVG DIAGNOSTIC TIME</span>
-              <Clock className="w-4 h-4 text-paccar-blue" />
+          {/* Card 3 */}
+          <div className="p-6 bg-white rounded-[20px] border border-black/[0.07] shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 relative group overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-blue-200 opacity-80" />
+            <div className="flex items-center justify-between text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-3">
+              <span>Avg Diagnostic Time</span>
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                <Clock className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-3xl sm:text-4xl font-semibold font-mono tracking-tight text-industrial-dark">
-              2.4 <span className="text-base font-normal text-industrial-muted">hrs</span>
+            <div className="text-4xl font-extrabold font-mono tracking-tight text-[#111827]">
+              2.4 <span className="text-xl font-normal text-[#6B7280]">hrs</span>
             </div>
-            <div className="text-xs text-industrial-muted">
-              -35% vs conventional manual
+            <div className="mt-2 text-xs text-[#4B5563] font-medium flex items-center gap-1">
+              <span className="text-emerald-600 font-bold">-35%</span> vs conventional manual triage
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-5 bg-white space-y-2">
-            <div className="flex items-center justify-between text-xs text-industrial-steel">
-              <span className="font-semibold uppercase tracking-wider">FLEET ALERTS</span>
-              <AlertTriangle className="w-4 h-4 text-status-warning" />
+          {/* Card 4 */}
+          <div className="p-6 bg-white rounded-[20px] border border-black/[0.07] shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 relative group overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-200 opacity-80" />
+            <div className="flex items-center justify-between text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-3">
+              <span>Fleet Telemetry Alerts</span>
+              <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-3xl sm:text-4xl font-semibold font-mono tracking-tight text-amber-700">
+            <div className="text-4xl font-extrabold font-mono tracking-tight text-amber-600">
               03
             </div>
-            <div className="text-xs text-amber-700 font-medium">
-              DTC SPN 94 spike observed
+            <div className="mt-2 text-xs text-amber-700 font-medium">
+              SPN 94 fuel rail pressure spike observed
             </div>
-          </Card>
+          </div>
         </div>
 
-        {/* PRIMARY INTAKE CARD: "START A DIAGNOSIS" */}
-        <Card className="p-6 md:p-8 bg-white border-l-4 border-l-paccar-blue" elevated>
+        {/* PRIMARY INTAKE CARD: "START A DIAGNOSIS" - APPLE HIG STYLING */}
+        <div className="p-8 sm:p-10 bg-gradient-to-br from-white via-[#FCFDFD] to-red-50/20 rounded-[24px] border border-black/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.05)] relative overflow-hidden">
           <div className="max-w-4xl space-y-6">
-            <div>
-              <div className="flex items-center gap-2 text-xs uppercase font-bold tracking-widest text-paccar-blue">
-                <Sparkles className="w-4 h-4" />
-                <span>QUICK DIAGNOSTIC INTAKE</span>
+            
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-red-50 text-[#E5402C] border border-[#F6C9BE]">
+                <Zap className="w-3.5 h-3.5" />
+                <span>TORQ Rapid Intake</span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-semibold text-industrial-dark mt-1">
-                Start a diagnosis
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111827]">
+                Quick Diagnostic Intake
               </h2>
-              <p className="text-sm text-industrial-steel mt-1">
-                Input the observed vehicle symptoms and fault code to trigger RAG evidence retrieval.
+              <p className="text-sm sm:text-base text-[#4B5563] font-normal leading-relaxed">
+                Enter truck telemetry, fault codes, or technician field notes to trigger Bayesian RAG evidence synthesis.
               </p>
             </div>
 
-            <form onSubmit={handleAnalyze} className="space-y-4">
+            <form onSubmit={handleAnalyze} className="space-y-5 pt-2">
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-industrial-steel uppercase tracking-wider mb-1.5">
-                    TRUCK ID / UNIT #
+                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
+                    Truck ID / Unit #
                   </label>
                   <input
                     type="text"
                     value={truckId}
                     onChange={(e) => setTruckId(e.target.value)}
-                    className="w-full h-11 px-3.5 bg-surface text-industrial-dark text-sm rounded-input border border-surface-border focus:outline-none focus:ring-2 focus:ring-paccar-blue/20 focus:border-paccar-blue"
+                    className="w-full h-12 px-4 bg-white text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
                     placeholder="e.g. KW-704"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-industrial-steel uppercase tracking-wider mb-1.5">
-                    MODEL
+                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
+                    Truck Model
                   </label>
                   <input
                     type="text"
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
-                    className="w-full h-11 px-3.5 bg-surface text-industrial-dark text-sm rounded-input border border-surface-border focus:outline-none focus:ring-2 focus:ring-paccar-blue/20 focus:border-paccar-blue"
+                    className="w-full h-12 px-4 bg-white text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
                     placeholder="e.g. Kenworth T680"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-industrial-steel uppercase tracking-wider mb-1.5">
-                    ENGINE & MILEAGE
+                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider mb-2">
+                    Engine Spec
                   </label>
                   <input
                     type="text"
                     value={engine}
                     onChange={(e) => setEngine(e.target.value)}
-                    className="w-full h-11 px-3.5 bg-surface text-industrial-dark text-sm rounded-input border border-surface-border focus:outline-none focus:ring-2 focus:ring-paccar-blue/20 focus:border-paccar-blue"
+                    className="w-full h-12 px-4 bg-white text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all"
                     placeholder="e.g. PACCAR MX-13 455 HP"
                     required
                   />
@@ -196,61 +223,69 @@ export default function DashboardPage() {
 
               {/* Symptom Input with Voice Icon */}
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-industrial-steel uppercase tracking-wider">
-                    OBSERVED SYMPTOM
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider">
+                    Observed Field Symptom
                   </label>
-                  <span className="text-[11px] text-industrial-muted flex items-center gap-1">
-                    <Mic className="w-3.5 h-3.5 text-paccar-blue" />
-                    Voice dictation ready
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => alert("TORQ Voice Input: Microphone active and ready for technician dictation...")}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 hover:bg-red-100 text-[#E5402C] text-xs font-semibold border border-[#F6C9BE] transition-colors"
+                  >
+                    <Mic className="w-3.5 h-3.5" />
+                    <span>Voice Dictation Ready</span>
+                  </button>
                 </div>
                 <div className="relative">
                   <textarea
                     rows={2}
                     value={symptom}
                     onChange={(e) => setSymptom(e.target.value)}
-                    className="w-full p-3.5 bg-surface text-industrial-dark text-sm rounded-input border border-surface-border focus:outline-none focus:ring-2 focus:ring-paccar-blue/20 focus:border-paccar-blue pr-12"
+                    className="w-full p-4 bg-white text-[#111827] text-sm font-medium rounded-xl border border-black/[0.12] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all pr-12 leading-relaxed"
                     placeholder="Describe what the technician or driver is experiencing..."
                     required
                   />
                   <button
                     type="button"
                     title="Simulate Voice Input"
-                    onClick={() => alert("Voice input activated: Listening to technician notes...")}
-                    className="absolute right-3 top-3 p-2 rounded-md hover:bg-surface-muted text-industrial-steel hover:text-paccar-blue transition-colors"
+                    onClick={() => alert("TORQ Voice Input: Listening to technician notes...")}
+                    className="absolute right-3.5 top-3.5 p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[#E5402C] transition-colors"
                   >
                     <Mic className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Fault Code with OCR Icon */}
+              {/* Fault Code with OCR Icon and Submit Button */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-industrial-steel uppercase tracking-wider">
-                      DTC / FAULT CODE (SPN / FMI)
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-bold text-[#374151] uppercase tracking-wider">
+                      DTC / Fault Code (SPN / FMI)
                     </label>
-                    <span className="text-[11px] text-industrial-muted flex items-center gap-1">
-                      <Camera className="w-3.5 h-3.5 text-paccar-blue" />
-                      OCR scanner ready
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => alert("TORQ OCR: Optical fault code cluster scan active...")}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold border border-gray-200 transition-colors"
+                    >
+                      <Camera className="w-3.5 h-3.5 text-gray-600" />
+                      <span>OCR Scanner Ready</span>
+                    </button>
                   </div>
                   <div className="relative">
                     <input
                       type="text"
                       value={dtc}
                       onChange={(e) => setDtc(e.target.value)}
-                      className="w-full h-11 px-3.5 font-mono bg-surface text-industrial-dark text-sm rounded-input border border-surface-border focus:outline-none focus:ring-2 focus:ring-paccar-blue/20 focus:border-paccar-blue pr-12"
+                      className="w-full h-12 px-4 font-mono font-semibold bg-white text-[#111827] text-sm rounded-xl border border-black/[0.12] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E5402C]/20 focus:border-[#E5402C] transition-all pr-12"
                       placeholder="e.g. SPN 94 / FMI 1"
                       required
                     />
                     <button
                       type="button"
                       title="Simulate Camera OCR Scan"
-                      onClick={() => alert("DTC OCR Camera activated: Scanning cluster diagnostic display...")}
-                      className="absolute right-3 top-2.5 p-1.5 rounded-md hover:bg-surface-muted text-industrial-steel hover:text-paccar-blue transition-colors"
+                      onClick={() => alert("TORQ Camera OCR: Scanning cluster diagnostic display...")}
+                      className="absolute right-3.5 top-3 p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[#E5402C] transition-colors"
                     >
                       <Camera className="w-4 h-4" />
                     </button>
@@ -258,93 +293,102 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="flex items-center justify-end">
-                  <Button
+                  <button
                     type="submit"
-                    size="lg"
-                    isLoading={isAnalyzing}
-                    className="w-full sm:w-auto px-8 gap-2 font-semibold shadow"
+                    disabled={isAnalyzing}
+                    className="w-full sm:w-auto px-8 h-12 rounded-full bg-[#E5402C] hover:bg-[#CF3722] text-white text-sm font-bold tracking-tight shadow-[0_4px_16px_rgba(229,64,44,0.25)] hover:shadow-[0_6px_20px_rgba(229,64,44,0.35)] transition-all flex items-center justify-center gap-2 disabled:opacity-75"
                   >
-                    <span>Analyze</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
+                    {isAnalyzing ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Synthesizing Hypotheses...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Execute TORQ Diagnosis</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
 
             </form>
           </div>
-        </Card>
+        </div>
 
-        {/* RECENT DIAGNOSTICS TABLE */}
+        {/* RECENT DIAGNOSTICS TABLE - APPLE HIG TABLE */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-industrial-dark">
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#111827]">
                 Recent Diagnostics
               </h2>
-              <p className="text-xs text-industrial-muted">
+              <p className="text-sm text-[#4B5563] font-normal">
                 Active and logged service sessions in this workshop
               </p>
             </div>
-            <Link href="/diagnostics/TRQ-2026-0941" className="text-xs font-semibold text-paccar-blue hover:underline">
-              View all sessions &rarr;
+            <Link href="/diagnostics/TRQ-2026-0941" className="text-xs font-bold text-[#E5402C] hover:underline flex items-center gap-1">
+              <span>View all active sessions</span>
+              <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="bg-white rounded-card border border-surface-border overflow-hidden shadow-card">
+          <div className="bg-white rounded-[20px] border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-surface-subtle border-b border-surface-border text-xs uppercase font-semibold text-industrial-steel tracking-wider">
+                <thead className="bg-[#FAFBFB] border-b border-black/[0.06] text-xs uppercase font-bold text-[#6B7280] tracking-wider">
                   <tr>
-                    <th className="py-3.5 px-4">Truck</th>
-                    <th className="py-3.5 px-4">DTC</th>
-                    <th className="py-3.5 px-4">Observed Issue</th>
-                    <th className="py-3.5 px-4">Confidence</th>
-                    <th className="py-3.5 px-4">Status</th>
-                    <th className="py-3.5 px-4">Updated</th>
-                    <th className="py-3.5 px-4 text-right">Action</th>
+                    <th className="py-4 px-5">Truck Unit</th>
+                    <th className="py-4 px-5">Fault Code</th>
+                    <th className="py-4 px-5">Observed Issue</th>
+                    <th className="py-4 px-5">TORQ Confidence</th>
+                    <th className="py-4 px-5">Diagnostic Status</th>
+                    <th className="py-4 px-5">Updated</th>
+                    <th className="py-4 px-5 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-surface-border">
+                <tbody className="divide-y divide-black/[0.05]">
                   {RECENT_DIAGNOSTICS_DATA.map((row) => (
-                    <tr key={row.id} className="hover:bg-surface-subtle/70 transition-colors">
-                      <td className="py-3.5 px-4 font-semibold text-industrial-dark">
+                    <tr key={row.id} className="hover:bg-red-50/30 transition-colors">
+                      <td className="py-4 px-5 font-bold text-[#111827]">
                         {row.truck}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-xs">
-                        <Badge variant="outline" size="sm" className="font-mono">
+                      <td className="py-4 px-5 font-mono text-xs">
+                        <span className="inline-flex px-2.5 py-1 rounded-md bg-gray-100 border border-gray-200 text-gray-800 font-mono font-semibold">
                           {row.dtc}
-                        </Badge>
+                        </span>
                       </td>
-                      <td className="py-3.5 px-4 text-industrial-steel">
+                      <td className="py-4 px-5 text-[#374151] font-medium max-w-xs truncate">
                         {row.issue}
                       </td>
-                      <td className="py-3.5 px-4">
-                        <span className="font-mono font-semibold text-paccar-blue">
+                      <td className="py-4 px-5">
+                        <span className="font-mono font-bold text-[#E5402C] text-sm">
                           {row.confidence}%
                         </span>
                       </td>
-                      <td className="py-3.5 px-4">
-                        <Badge
-                          variant={
+                      <td className="py-4 px-5">
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-tight border ${
                             row.status === "Resolved"
-                              ? "success"
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-300"
                               : row.status === "Root-Cause-Confirmed"
-                              ? "paccar"
-                              : "warning"
-                          }
-                          size="sm"
+                              ? "bg-blue-50 text-blue-800 border-blue-300"
+                              : "bg-amber-50 text-amber-800 border-amber-300"
+                          }`}
                         >
                           {row.status}
-                        </Badge>
+                        </span>
                       </td>
-                      <td className="py-3.5 px-4 text-xs text-industrial-muted">
+                      <td className="py-4 px-5 text-xs text-[#6B7280]">
                         {row.updated}
                       </td>
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-4 px-5 text-right">
                         <Link href={`/diagnostics/${row.id}`}>
-                          <Button variant="ghost" size="sm" className="text-xs text-paccar-blue hover:text-paccar-deep">
-                            Resume
-                          </Button>
+                          <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-red-50 text-[#E5402C] hover:bg-[#E5402C] hover:text-white font-bold text-xs transition-all">
+                            <span>Open</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </span>
                         </Link>
                       </td>
                     </tr>
@@ -356,53 +400,61 @@ export default function DashboardPage() {
         </section>
 
         {/* FLEET INTELLIGENCE PREVIEW (CLEARLY LABELED DEMO DATA) */}
-        <section className="p-6 rounded-card bg-surface-subtle border border-surface-border space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <BarChart2 className="w-5 h-5 text-paccar-blue" />
-              <h3 className="text-base font-semibold text-industrial-dark">
-                Fleet Intelligence Live Correlation
-              </h3>
+        <section className="p-8 rounded-[24px] bg-gradient-to-br from-white to-[#F9FAFB] border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.03)] space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-[#E5402C]">
+                <BarChart2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-extrabold tracking-tight text-[#111827]">
+                  TORQ Fleet Intelligence Live Correlation
+                </h3>
+                <p className="text-xs text-[#6B7280]">
+                  Real-time pattern analysis across 1,450 connected commercial transport units
+                </p>
+              </div>
             </div>
-            <Badge variant="outline" size="sm" className="bg-amber-50 text-amber-800 border-amber-300 font-mono text-[10px]">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300 font-mono text-[11px] font-bold">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
               DEMO DATA (PACCAR 1,450 TRUCK TELEMETRY CLUSTER)
-            </Badge>
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-            <div className="p-4 rounded-input bg-white border border-surface-border">
-              <span className="text-xs uppercase font-semibold text-industrial-steel block">
-                SIMILAR CASES IDENTIFIED
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div className="p-5 rounded-[18px] bg-white border border-black/[0.06] shadow-sm">
+              <span className="text-xs uppercase font-bold text-[#6B7280] tracking-wider block">
+                Similar Cases Identified
               </span>
-              <span className="text-2xl font-bold font-mono text-industrial-dark mt-1 block">
+              <span className="text-3xl font-extrabold font-mono text-[#111827] mt-2 block">
                 {FLEET_STATISTICS.similarCasesCount} cases
               </span>
-              <span className="text-xs text-industrial-muted">
+              <span className="text-xs text-[#6B7280] mt-1 block">
                 18 resolved by fuel-system inspection
               </span>
             </div>
 
-            <div className="p-4 rounded-input bg-white border border-surface-border">
-              <span className="text-xs uppercase font-semibold text-industrial-steel block">
-                FIRST-TIME FIX SUCCESS RATE
+            <div className="p-5 rounded-[18px] bg-white border border-black/[0.06] shadow-sm">
+              <span className="text-xs uppercase font-bold text-[#6B7280] tracking-wider block">
+                First-Time Fix Success Rate
               </span>
-              <span className="text-2xl font-bold font-mono text-emerald-700 mt-1 block">
+              <span className="text-3xl font-extrabold font-mono text-emerald-700 mt-2 block">
                 {FLEET_STATISTICS.resolutionRatePercent}%
               </span>
-              <span className="text-xs text-emerald-600 font-medium">
+              <span className="text-xs text-emerald-600 font-bold mt-1 block">
                 Correlated with Next-Best-Test 01
               </span>
             </div>
 
-            <div className="p-4 rounded-input bg-white border border-surface-border">
-              <span className="text-xs uppercase font-semibold text-industrial-steel block">
-                AVERAGE REPAIR COST
+            <div className="p-5 rounded-[18px] bg-white border border-black/[0.06] shadow-sm">
+              <span className="text-xs uppercase font-bold text-[#6B7280] tracking-wider block">
+                Average Repair Cost
               </span>
-              <span className="text-2xl font-bold font-mono text-industrial-dark mt-1 block">
+              <span className="text-3xl font-extrabold font-mono text-[#111827] mt-2 block">
                 {formatCurrencyINR(FLEET_STATISTICS.averageRepairCostINR)}
               </span>
-              <span className="text-xs text-industrial-muted">
-                Avg shop time: {FLEET_STATISTICS.averageDiagnosticHours} hrs
+              <span className="text-xs text-[#6B7280] mt-1 block">
+                Avg diagnostic time: {FLEET_STATISTICS.averageDiagnosticHours} hrs
               </span>
             </div>
           </div>
