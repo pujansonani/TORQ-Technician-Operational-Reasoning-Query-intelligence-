@@ -192,9 +192,9 @@ export default function DiagnosisResultPage() {
             <Link href={`/diagnostics/${session.session_id}/workflow`}>
               <button
                 type="button"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#111827] hover:bg-black text-white text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-xs font-bold text-emerald-900 shadow-[0_2px_8px_rgba(16,185,129,0.1)] hover:shadow-md transition-all active:scale-95"
               >
-                <Compass className="w-3.5 h-3.5 text-emerald-400" />
+                <Compass className="w-3.5 h-3.5 text-emerald-600" />
                 <span>5-Step Guided Workflow</span>
               </button>
             </Link>
@@ -263,7 +263,7 @@ export default function DiagnosisResultPage() {
                   {session.truck_info.brand.toLowerCase().includes("tata") ? "Tata Prima Heavy Haul" : session.truck_info.brand.toLowerCase().includes("ashok") ? "Ashok Leyland CRS" : session.truck_info.brand.toLowerCase().includes("volvo") ? "Volvo D13 Heavy" : "PACCAR Class 8"}
                 </div>
               </div>
-              <span className="px-3.5 py-1.5 rounded-full text-xs font-mono font-extrabold bg-[#111827] text-white shadow-sm">
+              <span className="px-3.5 py-1.5 rounded-full text-xs font-mono font-extrabold bg-red-50 text-[#E5402C] border border-[#F6C9BE] shadow-2xs">
                 {session.dtc_codes[0]}
               </span>
             </div>
@@ -323,29 +323,29 @@ export default function DiagnosisResultPage() {
           }
 
           return (
-            <div className="p-7 sm:p-8 rounded-[24px] bg-[#0E1525] text-white shadow-2xl relative overflow-hidden border border-slate-800 space-y-6">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-[#E5402C]/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="p-7 sm:p-8 rounded-[24px] bg-gradient-to-br from-white via-[#FCFDFE] to-red-50/15 border border-black/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.03)] space-y-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-80 h-80 bg-[#E5402C]/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
               
-              <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+              <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-black/[0.06] pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-[#E5402C] flex items-center justify-center text-white shadow-md">
-                    <Sparkles className="w-5 h-5" />
+                  <div className="w-10 h-10 rounded-2xl bg-red-50 border border-[#F6C9BE] flex items-center justify-center text-[#E5402C] shadow-sm">
+                    <Sparkles className="w-5 h-5 text-[#E5402C]" />
                   </div>
                   <div>
-                    <h3 className="text-base font-extrabold tracking-tight text-white flex items-center gap-2">
+                    <h3 className="text-base font-extrabold tracking-tight text-[#111827] flex items-center gap-2">
                       <span>AI Copilot Diagnostic Synthesis</span>
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-400/30">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-red-50 text-[#E5402C] border border-[#F6C9BE]">
                         Technician Rationale
                       </span>
                     </h3>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-[#6B7280]">
                       Multi-dimensional reasoning synthesized across PACCAR telemetry, DTC fault code, and Bayesian candidate priors
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-white/10 text-gray-200 border border-white/10">
+                  <span className="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-gray-100 text-[#111827] border border-gray-200">
                     TORQ-Lock™ Verified
                   </span>
                 </div>
@@ -353,9 +353,9 @@ export default function DiagnosisResultPage() {
 
               {/* High-level Field Narrative */}
               {summaryText && (
-                <div className="relative z-10 text-xs sm:text-sm text-gray-200 leading-relaxed font-sans bg-white/[0.04] p-5 rounded-2xl border border-white/[0.08] font-normal backdrop-blur-sm">
-                  <span className="font-bold text-[#E5402C] block text-xs uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5" />
+                <div className="relative z-10 text-xs sm:text-sm text-[#374151] leading-relaxed font-sans bg-[#FAFBFB] p-5 rounded-2xl border border-black/[0.06] font-normal">
+                  <span className="font-extrabold text-[#E5402C] block text-xs uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-[#E5402C]" />
                     <span>Technician Field Summary:</span>
                   </span>
                   {summaryText}
@@ -365,8 +365,8 @@ export default function DiagnosisResultPage() {
               {/* Detailed Multi-Cause Evidence Analysis */}
               {causeAnalysis.length > 0 && (
                 <div className="relative z-10 space-y-3 pt-1">
-                  <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-                    <Activity className="w-3.5 h-3.5 text-blue-400" />
+                  <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#6B7280] flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5 text-[#E5402C]" />
                     <span>Candidate Hypothesis Differential Breakdown</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -376,34 +376,34 @@ export default function DiagnosisResultPage() {
                       return (
                         <div
                           key={idx}
-                          className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex flex-col justify-between space-y-3 hover:border-white/20 transition-colors"
+                          className="p-5 rounded-2xl bg-white border border-black/[0.08] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between space-y-3 hover:border-black/[0.15] hover:shadow-md transition-all"
                         >
                           <div>
                             <div className="flex items-start justify-between gap-2 mb-2">
-                              <span className="text-xs font-bold text-white tracking-wide">
+                              <span className="text-xs font-bold text-[#111827] tracking-wide">
                                 {item.cause_id || `Candidate ${idx + 1}`}
                               </span>
                               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
                                 isHigh
-                                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                  ? "bg-emerald-50 text-emerald-800 border border-emerald-300"
                                   : isPossible
-                                  ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                                  : "bg-gray-700/50 text-gray-400 border border-gray-600/30"
+                                  ? "bg-blue-50 text-blue-800 border border-blue-300"
+                                  : "bg-gray-100 text-gray-700 border border-gray-200"
                               }`}>
                                 {item.assessment?.split("–")[0]?.split("-")[0]?.trim() || "Evaluated"}
                               </span>
                             </div>
-                            <p className="text-xs text-gray-300 leading-relaxed font-normal">
+                            <p className="text-xs text-[#4B5563] leading-relaxed font-normal">
                               {item.assessment}
                             </p>
                           </div>
 
                           {item.supporting_evidence && item.supporting_evidence.length > 0 && (
-                            <div className="pt-2.5 border-t border-white/[0.06] space-y-1">
-                              <span className="text-[10px] font-mono text-emerald-400 block font-semibold uppercase tracking-wider">
+                            <div className="pt-2.5 border-t border-black/[0.05] space-y-1">
+                              <span className="text-[10px] font-mono text-emerald-700 block font-bold uppercase tracking-wider">
                                 Supporting Field Evidence:
                               </span>
-                              <ul className="text-xs text-gray-300 space-y-1 pl-3.5 list-disc marker:text-emerald-400">
+                              <ul className="text-xs text-[#374151] space-y-1 pl-3.5 list-disc marker:text-[#E5402C]">
                                 {item.supporting_evidence.map((ev, eIdx) => (
                                   <li key={eIdx}>{ev}</li>
                                 ))}
@@ -601,7 +601,7 @@ export default function DiagnosisResultPage() {
                   <button
                     type="submit"
                     disabled={isSubmittingTest}
-                    className="w-full py-3.5 rounded-full bg-[#111827] hover:bg-black text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-50 active:scale-98"
+                    className="w-full py-3.5 rounded-full bg-[#E5402C] hover:bg-[#CF3722] text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(229,64,44,0.25)] hover:shadow-[0_6px_20px_rgba(229,64,44,0.35)] disabled:opacity-50 active:scale-98"
                   >
                     {isSubmittingTest ? (
                       <>
